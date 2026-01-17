@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sticky Keys Typing Test (Evil)</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <h1>Sticky Keys Typing Test (Evil)</h1>
+
+  <div class="card">
+    <div class="row">
+      <div class="stat">Level: <span id="levelLabel">1</span></div>
+      <div class="stat">Time: <span id="time">0.0</span>s</div>
+      <div class="stat">WPM: <span id="wpm">0</span></div>
+      <div class="stat">Accuracy: <span id="acc">100</span>%</div>
+      <div class="stat">Mistakes: <span id="mistakes">0</span></div>
+      <div class="stat">Curse: <span id="curseState">off</span></div>
+    </div>
+
+    <div class="row" style="margin-top: 12px;">
+      <button class="levelBtn" data-level="1">Level 1</button>
+      <button class="levelBtn" data-level="2">Level 2</button>
+      <button class="levelBtn" data-level="3">Level 3</button>
+      <button id="restartBtn">Restart</button>
+    </div>
+
+    <p class="target"><b>Target:</b> <span id="target"></span></p>
+
+    <div id="typingArea" tabindex="0" aria-label="Typing area">
+      <div class="typed" id="typed"></div>
+      <div class="hint" id="hintText"></div>
+    </div>
+  </div>
+
+  <!-- Load order matters -->
+  <script src="./levels.js"></script>
+  <script src="./punishments.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

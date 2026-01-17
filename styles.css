@@ -1,0 +1,89 @@
+body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+  
+  .card {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  
+  .row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .stat {
+    padding: 10px 12px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+  }
+  
+  #typingArea {
+    margin-top: 16px;
+    border: 2px dashed #bbb;
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 120px;
+    outline: none;
+  }
+  
+  #typingArea:focus {
+    border-color: #333;
+  }
+  
+  .target {
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  
+  .typed {
+    font-size: 18px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  
+  .good {
+    background: rgba(0,0,0,0.06);
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+  
+  .bad {
+    background: rgba(255,0,0,0.18);
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+  
+  .hint {
+    color: #666;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  
+  button {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background: #f7f7f7;
+  }
+  
+  .curse {
+    font-weight: 700;
+  }
+  
+  .levelBtn.active {
+    border-color: #333;
+    font-weight: 700;
+  }
+  
