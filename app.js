@@ -107,8 +107,7 @@ let dryingTimerId = null;
 let keyDisableTimerId = null;
 let bubbleTimerId = null;
 let glueTimerId = null;
-let honeySlowdown = false;
-let honeySlowdownTimer = null;
+let honeyDripTimerId = null;
 let globalDryingProgress = 0;
 let globalDryingTimerId = null;
 let levelCompleted = false;
@@ -127,47 +126,51 @@ function startTimerIfNeeded() {
   timerId = setInterval(updateStats, 100);
   window.AudioManager.play(level);
   
-  if (levelConfig.features.popups) {
-    window.Punishments.startPopups();
-  }
-  
-  // LEVEL 1: Random honey slowdown
-  if (level === 1) {
+  // LEVEL 1: Honey drips and occasional slowdown
+  if (level === 1 && levelConfig.features.drippingHoney) {
+    honeyDripTimerId = setInterval(() => {
+      window.Punishments.addHoneyDrip();
+    }, 1500);
+    
     setInterval(() => {
-      if (!isHoneySlow && Math.random() < 0.15) {
+      if (!isHoneySlow && Math.random() < 0.12) {
         triggerHoneySlowdown();
       }
-    }, 5000);
+    }, 6000);
   }
   
   // LEVEL 2: Start bubble generation
-  if (level === 2) {
+  if (level === 2 && levelConfig.features.bubbles) {
     bubbleTimerId = setInterval(() => {
       window.Punishments.addBubble();
-    }, 700);
+    }, 800);
   }
   
   // LEVEL 3: Start glue flow generation and key disable
   if (level === 3) {
-    glueTimerId = setInterval(() => {
-      window.Punishments.addGlueFlow();
-    }, 800);
+    if (levelConfig.features.glueFlows) {
+      glueTimerId = setInterval(() => {
+        window.Punishments.addGlueFlow();
+      }, 900);
+    }
     
-    keyDisableTimerId = setInterval(() => {
-      if (!disabledKey && !isDrying) {
-        const keys = ['e', 'a', 't', 'o', 'i', 'n'];
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        
-        disabledKey = randomKey;
-        keyDisableProgress = 0;
-        spacebarPresses = 0;
-        isDrying = false;
-        
-        keyDisableIndicator.style.display = 'block';
-        keyDisableText.textContent = `🚫 Key "${randomKey}" is stuck! Press SPACEBAR 10 times to break free!`;
-        showModal('🔒', `Key "${randomKey}" is covered in glue!\nPress SPACEBAR 10 times to break free!`);
-      }
-    }, 20000);
+    if (levelConfig.features.keyDisable) {
+      keyDisableTimerId = setInterval(() => {
+        if (!disabledKey && !isDrying) {
+          const keys = ['e', 'a', 't', 'o', 'i', 'n', 's'];
+          const randomKey = keys[Math.floor(Math.random() * keys.length)];
+          
+          disabledKey = randomKey;
+          keyDisableProgress = 0;
+          spacebarPresses = 0;
+          isDrying = false;
+          
+          keyDisableIndicator.style.display = 'block';
+          keyDisableText.textContent = `🚫 Key "${randomKey}" is stuck! Press SPACEBAR 10 times to break free!`;
+          showModal('🔒', `Key "${randomKey}" is covered in glue!\nPress SPACEBAR 10 times to break free!`);
+        }
+      }, 22000);
+    }
   }
 }
 
@@ -178,29 +181,28 @@ function triggerHoneySlowdown() {
   setTimeout(() => {
     isHoneySlow = false;
     typingArea.classList.remove('honey-slow');
-  }, 4000);
+  }, 4500);
 }
 
 function stopTimer() {
   if (timerId) clearInterval(timerId);
   if (bubbleTimerId) clearInterval(bubbleTimerId);
   if (glueTimerId) clearInterval(glueTimerId);
+  if (honeyDripTimerId) clearInterval(honeyDripTimerId);
   if (keyDisableTimerId) clearInterval(keyDisableTimerId);
   if (dryingTimerId) clearInterval(dryingTimerId);
-  if (honeySlowdownTimer) clearTimeout(honeySlowdownTimer);
   if (globalDryingTimerId) clearInterval(globalDryingTimerId);
   if (honeySlowTimer) clearTimeout(honeySlowTimer);
   
   timerId = null;
   bubbleTimerId = null;
   glueTimerId = null;
+  honeyDripTimerId = null;
   keyDisableTimerId = null;
   dryingTimerId = null;
-  honeySlowdownTimer = null;
   globalDryingTimerId = null;
   honeySlowTimer = null;
   
-  window.Punishments.stopPopups();
   window.AudioManager.stop();
 }
 
@@ -245,7 +247,9 @@ function renderTyped() {
     const ch = typedChars[i];
     const expected = targetText[i] ?? "";
     const cls = (ch === expected) ? "char-good" : "char-bad";
-    const isStretching = stretchingChar && i >= typedChars.length - stretchingChar.length;
+    
+    // LEVEL 2: Apply stretching effect
+    const isStretching = level === 2 && stretchingChar && i >= typedChars.length - stretchingChar.length;
     
     if (isStretching) {
       out.push(`<span class="${cls} char-stretching">${escapeHtml(ch)}</span>`);
@@ -271,7 +275,8 @@ function checkLevelCompletion() {
     levelCompleted = true;
     stopTimer();
     
-    if (level === 3) {
+    // LEVEL 3: Show drying bar
+    if (level === 3 && levelConfig.features.dryingBar) {
       globalDryingBar.style.display = 'block';
       globalDryingProgress = 0;
       globalDryingFill.style.width = '0%';
@@ -298,55 +303,56 @@ function showCompletionModal() {
   const maxLevel = Math.max(...Object.keys(window.LEVELS).map(Number));
   
   if (level < maxLevel) {
-    const nextLevelBtn = document.createElement('button');
-    nextLevelBtn.textContent = 'NEXT LEVEL';
-    nextLevelBtn.className = 'modal-btn';
-    nextLevelBtn.style.marginRight = '10px';
-    nextLevelBtn.onclick = () => {
-      hideModal();
-      resetModalButtons();
-      applyLevel(level + 1);
-      setTimeout(() => {
-        typingArea.focus();
-      }, 200);
-    };
-    
-    const restartLevelBtn = document.createElement('button');
-    restartLevelBtn.textContent = 'RESTART';
-    restartLevelBtn.className = 'modal-btn';
-    restartLevelBtn.style.background = '#EF4444';
-    restartLevelBtn.onclick = () => {
-      hideModal();
-      resetModalButtons();
-      restart();
-      setTimeout(() => {
-        typingArea.focus();
-      }, 200);
-    };
-    
     modalIcon.textContent = '🎉';
-    modalText.textContent = `LEVEL ${level} COMPLETE!\n\nGreat job! Ready for the next challenge?`;
+    modalText.textContent = `Level ${level} Complete!\n\nTime: ${elapsedSeconds().toFixed(1)}s\nWPM: ${computeWPM()}\nAccuracy: ${computeAccuracy()}%\n\nReady for Level ${level + 1}?`;
     
-    const modalBox = modalBtn.parentElement;
+    resetModalButtons();
     modalBtn.style.display = 'none';
     
     const buttonContainer = document.createElement('div');
     buttonContainer.id = 'completionButtonContainer';
     buttonContainer.style.display = 'flex';
+    buttonContainer.style.gap = '12px';
     buttonContainer.style.justifyContent = 'center';
-    buttonContainer.style.gap = '10px';
-    buttonContainer.appendChild(nextLevelBtn);
-    buttonContainer.appendChild(restartLevelBtn);
+    buttonContainer.style.flexWrap = 'wrap';
     
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'modal-btn';
+    nextBtn.textContent = `Next Level →`;
+    nextBtn.style.background = '#2E7D32';
+    nextBtn.addEventListener('click', () => {
+      hideModal();
+      applyLevel(level + 1);
+    });
+    
+    const restartCurrentBtn = document.createElement('button');
+    restartCurrentBtn.className = 'modal-btn';
+    restartCurrentBtn.textContent = '🔄 Retry';
+    restartCurrentBtn.style.background = '#FF6F00';
+    restartCurrentBtn.addEventListener('click', () => {
+      hideModal();
+      restart();
+    });
+    
+    buttonContainer.appendChild(nextBtn);
+    buttonContainer.appendChild(restartCurrentBtn);
+    
+    const modalBox = modalOverlay.querySelector('.modal-box');
     modalBox.appendChild(buttonContainer);
-    modalOverlay.classList.add('show');
     
-    if (modalTimeout) {
-      clearTimeout(modalTimeout);
-      modalTimeout = null;
-    }
+    modalOverlay.classList.add('show');
   } else {
-    showModal('🏆', `ALL LEVELS COMPLETE!\n\nYou are a sticky typing master!`);
+    modalIcon.textContent = '🏆';
+    modalText.textContent = `🎊 ALL LEVELS COMPLETE! 🎊\n\nFinal Stats:\nTime: ${elapsedSeconds().toFixed(1)}s\nWPM: ${computeWPM()}\nAccuracy: ${computeAccuracy()}%\n\nYou mastered the sticky keys!`;
+    
+    resetModalButtons();
+    modalBtn.textContent = 'Play Again';
+    modalBtn.addEventListener('click', () => {
+      hideModal();
+      applyLevel(1);
+    }, { once: true });
+    
+    modalOverlay.classList.add('show');
   }
 }
 
@@ -423,7 +429,6 @@ function restart() {
   keyDisableProgress = 0;
   spacebarPresses = 0;
   isDrying = false;
-  honeySlowdown = false;
   globalDryingProgress = 0;
   levelCompleted = false;
   isHoneySlow = false;
@@ -459,7 +464,7 @@ typingArea.addEventListener("keydown", (e) => {
   }
 
   // LEVEL 3: Handle spacebar for key disable
-  if (level === 3 && disabledKey && !isDrying && e.key === ' ') {
+  if (level === 3 && levelConfig.features.keyDisable && disabledKey && !isDrying && e.key === ' ') {
     e.preventDefault();
     spacebarPresses++;
     
@@ -484,13 +489,14 @@ typingArea.addEventListener("keydown", (e) => {
         }
       }, 100);
     } else {
+      keyDisableBar.style.width = (spacebarPresses * 10) + '%';
       keyDisableText.textContent = `🚫 Key "${disabledKey}" is stuck! Press SPACEBAR ${10 - spacebarPresses} more times to break free!`;
     }
     return;
   }
   
   // LEVEL 3: Block disabled key
-  if (disabledKey && e.key.toLowerCase() === disabledKey.toLowerCase()) {
+  if (level === 3 && disabledKey && e.key.toLowerCase() === disabledKey.toLowerCase()) {
     e.preventDefault();
     showModal('🚫', `Key "${disabledKey}" is stuck in glue!\nPress SPACEBAR ${10 - spacebarPresses} more times!`);
     return;
@@ -500,12 +506,6 @@ typingArea.addEventListener("keydown", (e) => {
     e.preventDefault();
     
     if (typedChars.length > 0) {
-      // LEVEL 2: Rubber banding (15% chance)
-      if (level === 2 && Math.random() < 0.15) {
-        showModal('🔄', 'The gum snapped it back!');
-        return;
-      }
-      
       typedChars.pop();
       totalKeystrokes++;
       recomputeCorrectCount();
@@ -519,7 +519,7 @@ typingArea.addEventListener("keydown", (e) => {
   e.preventDefault();
 
   // LEVEL 1: Honey slowdown effect
-  if (level === 1 && isHoneySlow) {
+  if (level === 1 && levelConfig.features.slowTyping && isHoneySlow) {
     if (pendingKey) return; // Ignore if already processing a key
     
     pendingKey = e.key;
@@ -528,7 +528,7 @@ typingArea.addEventListener("keydown", (e) => {
     honeySlowTimer = setTimeout(() => {
       processKeyPress(pendingKey);
       pendingKey = null;
-    }, 800);
+    }, 900);
     return;
   }
 
@@ -548,62 +548,42 @@ function processKeyPress(char) {
     correctCount++;
   }
 
-  // Reduced letter repeat glitch
-  const repeatChance = level === 1 ? 0.15 : (level === 2 ? 0.20 : 0.25);
-  if (Math.random() < repeatChance) {
-    const repeatCount = level === 1 ? 2 : (Math.floor(Math.random() * 2) + 2);
-    for (let i = 0; i < repeatCount; i++) {
-      typedChars.push(char);
-    }
-    showModal('⚠️', 'Letter stuck and repeated!');
-    
-    if (level === 1) {
-      window.Punishments.addHoneyDrip();
-    }
-    
-    recomputeCorrectCount();
-    renderTyped();
-    updateStats();
-    return;
-  }
-
-  // LEVEL 1: Random honey drips
-  if (level === 1 && Math.random() < 0.2) {
-    window.Punishments.addHoneyDrip();
-  }
-
-  // LEVEL 2: Sticky clusters (reduced frequency)
-  if (level === 2 && char.toLowerCase() === 'e' && Math.random() < 0.25) {
-    typedChars.push('e', 'r', 'r');
-    showModal('🫧', 'ERR stuck together!');
-    
-    stretchingChar = 'err';
-    setTimeout(() => {
-      stretchingChar = null;
+  // LEVEL 1: Repeated letters mechanic ONLY
+  if (level === 1 && levelConfig.features.repeatedLetters) {
+    const repeatChance = 0.18; // 18% chance
+    if (Math.random() < repeatChance) {
+      const repeatCount = Math.floor(Math.random() * 2) + 2; // 2-3 repeats
+      for (let i = 0; i < repeatCount; i++) {
+        typedChars.push(char);
+      }
+      showModal('🍯', 'Honey made the letter repeat!');
+      
+      recomputeCorrectCount();
       renderTyped();
-    }, 1200);
-    
-    recomputeCorrectCount();
-    renderTyped();
-    updateStats();
-    return;
+      updateStats();
+      return;
+    }
   }
 
-  // LEVEL 2: Random stretch effect
-  if (level === 2 && Math.random() < 0.20) {
-    stretchingChar = char;
-    setTimeout(() => {
-      stretchingChar = null;
-      renderTyped();
-    }, 1200);
+  // LEVEL 2: Stretching effect ONLY
+  if (level === 2 && levelConfig.features.stretchEffect) {
+    const stretchChance = 0.25; // 25% chance
+    if (Math.random() < stretchChance) {
+      stretchingChar = char;
+      setTimeout(() => {
+        stretchingChar = null;
+        renderTyped();
+      }, 1200);
+      showModal('🫧', 'Gum stretched your letter!');
+    }
   }
 
   typedChars.push(char);
   
-  // LEVEL 3: Word jumble (reduced frequency)
-  if (level === 3 && mistakes > 0 && mistakes % 5 === 0 && typedChars.length > 10) {
-    typedChars = window.Punishments.jumbleLastFewWords(typedChars, 20);
-    showModal('🌀', 'The glue scrambled your words!');
+  // LEVEL 3: Word jumble mechanic ONLY
+  if (level === 3 && levelConfig.features.wordJumble && mistakes > 0 && mistakes % 5 === 0 && typedChars.length > 15) {
+    typedChars = window.Punishments.jumbleLastFewWords(typedChars, 25);
+    showModal('🌀', 'Glue scrambled your words!');
   }
 
   recomputeCorrectCount();

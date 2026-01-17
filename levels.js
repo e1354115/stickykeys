@@ -68,39 +68,33 @@ window.AudioManager = {
 // ---------- LEVELS ----------
 window.LEVELS = {
   1: {
-    name: "Honey Level",
-    generator: () => generateSentence(10), // Easier - 10 words
+    name: "Honey Level - Repeated Letters",
+    generator: () => generateSentence(15), // 15 words
     theme: "honey",
     features: {
-      inputLatency: true,
-      drippingHoney: true,
-      repeatOnWrong: true,
-      slowTyping: true
+      repeatedLetters: true,    // ONLY repeated letters
+      drippingHoney: true,       // Visual effect
+      slowTyping: true          // Occasional slowdown
     }
   },
   2: {
-    name: "Chewing Gum Level",
-    generator: () => generateMultiline(3, 8), // Medium - 3 lines, 8 words each
+    name: "Chewing Gum Level - Stretching",
+    generator: () => generateMultiline(3, 10), // 3 lines, 10 words each
     theme: "gum",
     features: {
-      rubberBanding: true,
-      stretchEffect: true,
-      stickyClusters: true,
-      repeatOnWrong: true,
-      popups: true,
-      realisticStretch: true
+      stretchEffect: true,      // ONLY stretching effect
+      bubbles: true            // Visual effect
     }
   },
   3: {
-    name: "Glue Level",
-    generator: () => generateMultiline(5, 10), // Hard - 5 lines, 10 words each
+    name: "Glue Level - Jumble & Dry",
+    generator: () => generateMultiline(5, 12), // 5 lines, 12 words each
     theme: "glue",
     features: {
-      hardStuckKeys: true,
-      repeatOnWrong: true,
-      popups: true,
-      wordJumble: true,
-      dryingBar: true
+      wordJumble: true,         // ONLY word jumbling
+      dryingBar: true,         // Drying bar at completion
+      glueFlows: true,         // Visual effect
+      keyDisable: true         // Key disabling mechanic
     }
   }
 };

@@ -27,31 +27,31 @@ body {
 }
 
 .bg-video.active {
-  opacity: 1;
+  opacity: 0.3;
 }
 
-/* Fallback gradients if video doesn't load */
+/* Improved fallback gradients with better contrast */
 body.level-honey {
-  background: linear-gradient(180deg, #FFFACD 0%, #FFE4B5 30%, #FFD700 70%, #FFA500 100%);
+  background: linear-gradient(180deg, #FFF4E6 0%, #FFE0B2 30%, #FFCC80 70%, #FFB74D 100%);
 }
 
 body.level-honey::before {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.1;
+  opacity: 0.08;
   pointer-events: none;
   background-image: 
-    radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.4) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(255, 165, 0, 0.4) 0%, transparent 50%);
+    radial-gradient(circle at 20% 30%, rgba(255, 152, 0, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(251, 140, 0, 0.3) 0%, transparent 50%);
 }
 
 body.level-gum {
-  background: linear-gradient(180deg, #FFF0F5 0%, #FFE4E1 30%, #FFB6C1 70%, #FF69B4 100%);
+  background: linear-gradient(180deg, #FCE4EC 0%, #F8BBD0 30%, #F48FB1 70%, #F06292 100%);
 }
 
 body.level-glue {
-  background: linear-gradient(135deg, #E0F7FA 0%, #B3E5FC 25%, #81D4FA 50%, #4FC3F7 75%, #29B6F6 100%);
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 25%, #90CAF9 50%, #64B5F6 75%, #42A5F5 100%);
 }
 
 /* Honey drips */
@@ -68,8 +68,8 @@ body.level-glue {
   width: 12px;
   height: 0;
   border-radius: 0 0 50% 50%;
-  background: linear-gradient(180deg, rgba(255, 215, 0, 0.9) 0%, rgba(255, 165, 0, 0.95) 50%, rgba(218, 165, 32, 1) 100%);
-  box-shadow: 0 2px 10px rgba(255, 165, 0, 0.5);
+  background: linear-gradient(180deg, rgba(255, 152, 0, 0.9) 0%, rgba(251, 140, 0, 0.95) 50%, rgba(245, 124, 0, 1) 100%);
+  box-shadow: 0 2px 10px rgba(255, 152, 0, 0.6);
   animation: drip 2.5s ease-in forwards;
 }
 
@@ -90,9 +90,9 @@ body.level-glue {
   position: absolute;
   bottom: -100px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 192, 203, 0.8), rgba(255, 105, 180, 0.6));
-  border: 2px solid rgba(255, 182, 193, 0.5);
-  box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.5), 0 5px 20px rgba(255, 105, 180, 0.4);
+  background: radial-gradient(circle at 30% 30%, rgba(240, 98, 146, 0.7), rgba(236, 64, 122, 0.5));
+  border: 2px solid rgba(244, 143, 177, 0.6);
+  box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.4), 0 5px 20px rgba(236, 64, 122, 0.4);
   animation: bubble-rise forwards;
 }
 
@@ -128,8 +128,8 @@ body.level-glue {
   top: 0;
   height: 0;
   border-radius: 0 0 50% 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(220, 220, 220, 0.95) 50%, rgba(200, 200, 200, 1) 100%);
-  box-shadow: 0 4px 15px rgba(150, 150, 150, 0.5);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(230, 230, 230, 0.9) 50%, rgba(210, 210, 210, 1) 100%);
+  box-shadow: 0 4px 15px rgba(66, 165, 245, 0.4);
   animation: glue-flow 3.5s ease-out forwards;
 }
 
@@ -158,14 +158,15 @@ body.level-glue {
 
 h1 {
   text-align: center;
-  color: #000;
+  color: #1A1A1A;
   font-size: 32px;
   margin-bottom: 32px;
-  text-shadow: 4px 4px 0 rgba(255, 255, 255, 0.5);
+  text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.8), 
+               -1px -1px 0 rgba(255, 255, 255, 0.8);
   letter-spacing: 2px;
 }
 
-/* Stats row */
+/* Stats row - improved contrast */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -174,27 +175,30 @@ h1 {
 }
 
 .stat-block {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(26, 26, 26, 0.85);
   padding: 16px;
   border-radius: 12px;
   text-align: center;
-  border: 2px solid white;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .stat-label {
   font-size: 10px;
-  color: #FFD700;
+  color: #FFC107;
   display: block;
   margin-bottom: 8px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .stat-value {
   font-size: 24px;
-  color: white;
+  color: #FFFFFF;
   font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Button row */
+/* Button row - better visibility */
 .button-row {
   display: flex;
   gap: 12px;
@@ -207,106 +211,122 @@ h1 {
   font-family: 'Press Start 2P', cursive;
   font-size: 12px;
   padding: 16px 24px;
-  border: none;
+  border: 3px solid #1A1A1A;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
   font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .level-btn {
-  background: rgba(255, 255, 255, 0.3);
-  color: #000;
+  background: rgba(255, 255, 255, 0.85);
+  color: #1A1A1A;
 }
 
 .level-btn:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 .level-btn.active {
-  background: #FFD700;
-  color: #000;
+  background: #FFC107;
+  color: #1A1A1A;
   transform: scale(1.05);
+  border-color: #FF6F00;
 }
 
 .restart-btn {
-  background: #EF4444;
+  background: #E53935;
   color: white;
+  margin-left: auto;
 }
 
 .restart-btn:hover {
-  background: #DC2626;
+  background: #C62828;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* Key disable indicator */
+/* Key disable indicator - improved visibility */
 #keyDisableIndicator {
   margin-bottom: 16px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(26, 26, 26, 0.9);
   padding: 16px;
   border-radius: 12px;
-  border: 2px solid #EF4444;
+  border: 3px solid #E53935;
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.5);
 }
 
 #keyDisableText {
-  color: white;
+  color: #FFFFFF;
   font-size: 12px;
   margin-bottom: 8px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 #keyDisableProgress {
   width: 100%;
-  background: #374151;
+  background: #424242;
   border-radius: 9999px;
   height: 16px;
   overflow: hidden;
+  border: 2px solid #757575;
 }
 
 #keyDisableBar {
   height: 100%;
-  background: #22C55E;
+  background: linear-gradient(90deg, #66BB6A 0%, #4CAF50 50%, #388E3C 100%);
   width: 0%;
   transition: width 0.1s;
   border-radius: 9999px;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
 }
 
-/* Target text area */
+/* Target text area - better contrast */
 .target-area {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(26, 26, 26, 0.9);
   padding: 24px;
   border-radius: 12px;
   margin-bottom: 16px;
-  border: 2px solid white;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .target-label {
   font-size: 12px;
-  color: #FFD700;
+  color: #FFC107;
   margin-bottom: 8px;
   display: block;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .target-text {
   font-size: 18px;
-  color: white;
+  color: #FFFFFF;
   line-height: 1.8;
   white-space: pre-wrap;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Typing area */
+/* Typing area - improved contrast */
 .typing-area {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   padding: 24px;
   border-radius: 12px;
   min-height: 200px;
   outline: none;
   cursor: text;
-  border: 4px solid #FFD700;
+  border: 4px solid #FFC107;
   transition: border-color 0.3s;
   position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .typing-area:focus {
-  border-color: #FFA500;
+  border-color: #FF6F00;
+  box-shadow: 0 6px 16px rgba(255, 111, 0, 0.4);
 }
 
 .typed-text {
@@ -315,21 +335,24 @@ h1 {
   white-space: pre-wrap;
   word-break: break-word;
   min-height: 100px;
+  color: #1A1A1A;
 }
 
 .char-good {
-  color: #22C55E;
-  background: rgba(34, 197, 94, 0.2);
+  color: #2E7D32;
+  background: rgba(129, 199, 132, 0.3);
   padding: 0 4px;
   border-radius: 4px;
+  font-weight: bold;
 }
 
 .char-bad {
-  color: #EF4444;
-  background: rgba(239, 68, 68, 0.3);
+  color: #C62828;
+  background: rgba(239, 83, 80, 0.4);
   padding: 0 4px;
   border-radius: 4px;
   animation: shake 0.3s;
+  font-weight: bold;
 }
 
 @keyframes shake {
@@ -338,32 +361,32 @@ h1 {
   75% { transform: translateX(4px); }
 }
 
-/* Cursors */
+/* Cursors - better visibility */
 .cursor {
   display: inline-block;
-  width: 2px;
+  width: 3px;
   height: 24px;
   margin-left: 4px;
   vertical-align: middle;
 }
 
 .cursor-honey {
-  background: #D97706;
-  animation: pulse-slow 2s infinite;
+  background: #E65100;
+  animation: pulse-slow 1.5s infinite;
 }
 
 .cursor-gum {
-  background: #EC4899;
+  background: #C2185B;
   animation: bounce-cursor 0.5s infinite;
 }
 
 .cursor-glue {
-  background: #3B82F6;
+  background: #1565C0;
 }
 
 @keyframes pulse-slow {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  50% { opacity: 0.3; }
 }
 
 @keyframes bounce-cursor {
@@ -371,14 +394,14 @@ h1 {
   50% { transform: translateY(-4px); }
 }
 
-/* Modal */
+/* Modal - improved styling */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   display: none;
   align-items: center;
   justify-content: center;
@@ -396,13 +419,13 @@ h1 {
 }
 
 .modal-box {
-  background: linear-gradient(180deg, #FFD700 0%, #FFA500 100%);
-  border: 4px solid #000;
+  background: linear-gradient(180deg, #FFC107 0%, #FFB300 100%);
+  border: 4px solid #1A1A1A;
   padding: 32px;
   max-width: 500px;
   text-align: center;
   border-radius: 12px;
-  box-shadow: 0 0 0 4px #FFD700, 12px 12px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 4px #FFC107, 12px 12px 0 rgba(0, 0, 0, 0.6);
   animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
@@ -415,32 +438,35 @@ h1 {
   font-size: 64px;
   margin-bottom: 20px;
   display: block;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .modal-text {
-  color: #000;
+  color: #1A1A1A;
   font-size: 14px;
   line-height: 1.8;
   margin-bottom: 20px;
   white-space: pre-line;
   font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .modal-btn {
   font-family: 'Press Start 2P', cursive;
   font-size: 14px;
   padding: 14px 28px;
-  background: #22C55E;
-  border: none;
+  background: #2E7D32;
+  border: 3px solid #1B5E20;
   border-radius: 8px;
   color: white;
   cursor: pointer;
   transition: all 0.2s;
   font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .modal-btn:hover {
-  background: #16A34A;
+  background: #388E3C;
   transform: scale(1.05);
 }
 
@@ -469,19 +495,19 @@ h1 {
   }
 }
 
-/* Global drying bar for Level 3 */
+/* Global drying bar for Level 3 - improved visibility */
 #globalDryingBar {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(26, 26, 26, 0.95);
   padding: 40px 60px;
   border-radius: 20px;
-  border: 4px solid #3B82F6;
+  border: 4px solid #42A5F5;
   z-index: 10000;
   min-width: 400px;
-  box-shadow: 0 0 50px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 50px rgba(66, 165, 245, 0.6), 0 8px 32px rgba(0, 0, 0, 0.8);
 }
 
 #globalDryingText {
@@ -490,29 +516,30 @@ h1 {
   margin-bottom: 20px;
   text-align: center;
   font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 #globalDryingProgress {
   width: 100%;
-  background: #1F2937;
+  background: #263238;
   border-radius: 9999px;
   height: 30px;
   overflow: hidden;
-  border: 2px solid #3B82F6;
+  border: 3px solid #42A5F5;
 }
 
 #globalDryingFill {
   height: 100%;
-  background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 50%, #93C5FD 100%);
+  background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 50%, #64B5F6 100%);
   width: 0%;
   transition: width 0.3s ease;
   border-radius: 9999px;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  box-shadow: 0 0 20px rgba(66, 165, 245, 0.8);
 }
 
-/* Honey slow typing indicator */
+/* Honey slow typing indicator - better visibility */
 .typing-area.honey-slow {
-  opacity: 0.8;
+  opacity: 0.85;
   transition: opacity 0.3s;
 }
 
@@ -522,15 +549,16 @@ h1 {
   bottom: 8px;
   right: 8px;
   font-size: 10px;
-  color: #D97706;
-  background: rgba(255, 215, 0, 0.5);
+  color: #E65100;
+  background: rgba(255, 152, 0, 0.3);
   padding: 6px 12px;
   border-radius: 4px;
+  border: 2px solid #E65100;
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.7; }
+  0%, 100% { opacity: 0.8; }
   50% { opacity: 1; }
 }
 
@@ -546,13 +574,13 @@ h1 {
     transform: scaleX(1) scaleY(1);
   }
   30% { 
-    transform: scaleX(2) scaleY(0.8);
+    transform: scaleX(2.5) scaleY(0.7);
   }
   60% { 
-    transform: scaleX(1.8) scaleY(0.9);
+    transform: scaleX(2) scaleY(0.85);
   }
   80% { 
-    transform: scaleX(1.2) scaleY(0.95);
+    transform: scaleX(1.3) scaleY(0.95);
   }
   100% { 
     transform: scaleX(1) scaleY(1);
