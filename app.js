@@ -394,21 +394,16 @@ typingArea.addEventListener("keydown", (e) => {
     startTimerIfNeeded();
   }
   
-  // Level 1: Honey slowdown effect
-  if (level === 1 && !honeySlowdown && e.key.length === 1) {
-    honeySlowdown = true;
+  // Level 1: Visual honey slowdown effect (doesn't block typing)
+  if (level === 1 && e.key.length === 1) {
     typingArea.classList.add('honey-slow');
     
     if (honeySlowdownTimer) clearTimeout(honeySlowdownTimer);
     honeySlowdownTimer = setTimeout(() => {
-      honeySlowdown = false;
       typingArea.classList.remove('honey-slow');
-    }, 800); // 800ms delay for honey effect
-    
-    e.preventDefault();
-    return; // Block this keystroke to create slowdown
+    }, 200); // Brief visual effect
   }
-  
+
   // Handle spacebar for key disable feature
   if (level === 3 && disabledKey && !isDrying && e.key === ' ') {
     e.preventDefault();
