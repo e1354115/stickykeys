@@ -465,8 +465,12 @@ typingArea.addEventListener("keydown", (e) => {
   }
 
   // LEVEL 3: Handle spacebar for key disable
-  if (level === 3 && levelConfig.features.keyDisable && disabledKey && !isDrying && e.key === ' ') {
+  if (level === 3 && levelConfig.features.keyDisable && disabledKey && e.key === ' ') {
     e.preventDefault();
+    
+    // Block spacebar if already drying
+    if (isDrying) return;
+    
     spacebarPresses++;
     
     if (spacebarPresses >= 10) {
@@ -496,11 +500,20 @@ typingArea.addEventListener("keydown", (e) => {
     return;
   }
   
-  // LEVEL 3: Block disabled key
-  if (level === 3 && disabledKey && e.key.toLowerCase() === disabledKey.toLowerCase()) {
-    e.preventDefault();
-    showModal('🚫', `Key "${disabledKey}" is stuck in glue!\nPress SPACEBAR ${10 - spacebarPresses} more times!`, true);
-    return;
+  // LEVEL 3: Block disabled key OR if drying
+  if (level === 3 && disabledKey) {
+    // Block all typing (except spacebar) if key is drying
+    if (isDrying && e.key !== ' ') {
+      e.preventDefault();
+      return;
+    }
+    
+    // Block the specific disabled key
+    if (e.key.toLowerCase() === disabledKey.toLowerCase()) {
+      e.preventDefault();
+      showModal('🚫', `Key "${disabledKey}" is stuck in glue!\nPress SPACEBAR ${10 - spacebarPresses} more times!`, true);
+      return;
+    }
   }
   
   if (e.key === "Backspace") {
@@ -566,8 +579,8 @@ function processKeyPress(char) {
       showModal('🫧', 'Gum stretched your letters!', true);
     }
     
-    // Word scrambling - happens independently
-    if (levelConfig.features.wordJumble && Math.random() < 0.25 && typedChars.length > 15) {
+    // Word scrambling - happens rarely (very low frequency)
+    if (levelConfig.features.wordJumble && Math.random() < 0.015 && typedChars.length > 30) {
       typedChars = window.Punishments.stretchAndJumbleWord(typedChars);
       showModal('🫧', 'Gum scrambled your words!', true);
     }
@@ -581,8 +594,8 @@ function processKeyPress(char) {
 
   typedChars.push(char);
   
-  // LEVEL 3: Word jumble happens EVERY 3 mistakes (more frequent!)
-  if (level === 3 && levelConfig.features.wordJumble && mistakes > 0 && mistakes % 3 === 0 && typedChars.length > 20) {
+  // LEVEL 3: Word jumble happens EVERY 5 mistakes
+  if (level === 3 && levelConfig.features.wordJumble && mistakes > 0 && mistakes % 5 === 0 && typedChars.length > 20) {
     typedChars = window.Punishments.jumbleLastFewWords(typedChars, 60);
     showModal('🌀', 'Glue scrambled many words!', true);
   }

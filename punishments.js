@@ -83,24 +83,24 @@ window.Punishments = (function () {
     return newStr.split("");
   }
 
-  // GUM LEVEL - Scrambles multiple words AND their letters
+  // GUM LEVEL - Scrambles fewer words (1-2) with letters mixed
   function stretchAndJumbleWord(typedChars) {
     const typedStr = typedChars.join("");
     const words = typedStr.trim().split(/\s+/);
     
-    if (words.length < 3) return typedChars;
+    if (words.length < 2) return typedChars;
     
-    // Scramble last 2-4 words completely
-    const numWordsToScramble = Math.min(words.length, Math.floor(Math.random() * 3) + 2);
+    // Scramble only 1-2 words (much less severe)
+    const numWordsToScramble = Math.min(words.length, Math.floor(Math.random() * 2) + 1);
     const startIdx = Math.max(0, words.length - numWordsToScramble);
     const wordsToKeep = words.slice(0, startIdx);
     const wordsToScramble = words.slice(startIdx);
     
-    // Scramble BOTH word order AND letters within each word
+    // Scramble letters within words only (no word order shuffling)
     const scrambledWords = wordsToScramble.map(word => {
-      if (word.length <= 2) return word;
+      if (word.length <= 3) return word; // Don't scramble short words
       
-      // Completely scramble all letters in the word
+      // Scramble letters in the word
       const letters = word.split('');
       for (let i = letters.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -108,12 +108,6 @@ window.Punishments = (function () {
       }
       return letters.join('');
     });
-    
-    // ALSO shuffle the word order
-    for (let i = scrambledWords.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [scrambledWords[i], scrambledWords[j]] = [scrambledWords[j], scrambledWords[i]];
-    }
     
     const newStr = [...wordsToKeep, ...scrambledWords].join(' ');
     return newStr.split('');
