@@ -27,6 +27,11 @@ const globalDryingBar = document.getElementById("globalDryingBar");
 const globalDryingText = document.getElementById("globalDryingText");
 const globalDryingFill = document.getElementById("globalDryingFill");
 
+// Video elements
+const bgVideoHoney = document.getElementById("bgVideoHoney");
+const bgVideoGum = document.getElementById("bgVideoGum");
+const bgVideoGlue = document.getElementById("bgVideoGlue");
+
 // ---------- MODAL SYSTEM ----------
 let modalTimeout = null;
 
@@ -54,13 +59,10 @@ function hideModal() {
 }
 
 function resetModalButtons() {
-  // Remove custom button container if it exists
   const buttonContainer = document.getElementById('completionButtonContainer');
   if (buttonContainer) {
     buttonContainer.remove();
   }
-  
-  // Restore the default OK button
   modalBtn.style.display = '';
 }
 
@@ -68,6 +70,15 @@ modalBtn.addEventListener("click", (e) => {
   hideModal();
   e.preventDefault();
 });
+
+// Allow Enter key to close modal
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && modalOverlay.classList.contains("show")) {
+    e.preventDefault();
+    hideModal();
+  }
+});
+
 modalOverlay.addEventListener("click", (e) => {
   if (e.target === modalOverlay) {
     hideModal();
@@ -101,6 +112,9 @@ let honeySlowdownTimer = null;
 let globalDryingProgress = 0;
 let globalDryingTimerId = null;
 let levelCompleted = false;
+let isHoneySlow = false;
+let pendingKey = null;
+let honeySlowTimer = null;
 
 // ---------- HELPERS ----------
 function pickText() {
@@ -117,20 +131,28 @@ function startTimerIfNeeded() {
     window.Punishments.startPopups();
   }
   
+  // LEVEL 1: Random honey slowdown
+  if (level === 1) {
+    setInterval(() => {
+      if (!isHoneySlow && Math.random() < 0.15) {
+        triggerHoneySlowdown();
+      }
+    }, 5000);
+  }
+  
   // LEVEL 2: Start bubble generation
   if (level === 2) {
     bubbleTimerId = setInterval(() => {
       window.Punishments.addBubble();
-    }, 500);
+    }, 700);
   }
   
-  // LEVEL 3: Start glue flow generation
+  // LEVEL 3: Start glue flow generation and key disable
   if (level === 3) {
     glueTimerId = setInterval(() => {
       window.Punishments.addGlueFlow();
     }, 800);
     
-    // Start key disable mechanism
     keyDisableTimerId = setInterval(() => {
       if (!disabledKey && !isDrying) {
         const keys = ['e', 'a', 't', 'o', 'i', 'n'];
@@ -145,8 +167,18 @@ function startTimerIfNeeded() {
         keyDisableText.textContent = `🚫 Key "${randomKey}" is stuck! Press SPACEBAR 10 times to break free!`;
         showModal('🔒', `Key "${randomKey}" is covered in glue!\nPress SPACEBAR 10 times to break free!`);
       }
-    }, 15000);
+    }, 20000);
   }
+}
+
+function triggerHoneySlowdown() {
+  isHoneySlow = true;
+  typingArea.classList.add('honey-slow');
+  
+  setTimeout(() => {
+    isHoneySlow = false;
+    typingArea.classList.remove('honey-slow');
+  }, 4000);
 }
 
 function stopTimer() {
@@ -157,6 +189,7 @@ function stopTimer() {
   if (dryingTimerId) clearInterval(dryingTimerId);
   if (honeySlowdownTimer) clearTimeout(honeySlowdownTimer);
   if (globalDryingTimerId) clearInterval(globalDryingTimerId);
+  if (honeySlowTimer) clearTimeout(honeySlowTimer);
   
   timerId = null;
   bubbleTimerId = null;
@@ -165,6 +198,7 @@ function stopTimer() {
   dryingTimerId = null;
   honeySlowdownTimer = null;
   globalDryingTimerId = null;
+  honeySlowTimer = null;
   
   window.Punishments.stopPopups();
   window.AudioManager.stop();
@@ -205,7 +239,7 @@ function escapeHtml(s) {
 
 function renderTyped() {
   const out = [];
-  const maxChars = Math.min(typedChars.length, 1000); // Prevent too many characters
+  const maxChars = Math.min(typedChars.length, 1000);
   
   for (let i = 0; i < maxChars; i++) {
     const ch = typedChars[i];
@@ -214,13 +248,7 @@ function renderTyped() {
     const isStretching = stretchingChar && i >= typedChars.length - stretchingChar.length;
     
     if (isStretching) {
-      // Exaggerated stretch for level 2
-      const scaleX = level === 2 ? 3 : 1.5;
-      const scaleY = level === 2 ? 2 : 1.3;
-      const marginRight = level === 2 ? '60px' : '20px';
-      const fontSize = level === 2 ? '2.5em' : '1.5em';
-      
-      out.push(`<span class="${cls}" style="display: inline-block; transform: scaleX(${scaleX}) scaleY(${scaleY}); transition: transform 2.5s ease; margin-right: ${marginRight}; font-size: ${fontSize};">${escapeHtml(ch)}</span>`);
+      out.push(`<span class="${cls} char-stretching">${escapeHtml(ch)}</span>`);
     } else {
       out.push(`<span class="${cls}">${escapeHtml(ch)}</span>`);
     }
@@ -238,13 +266,11 @@ function renderTyped() {
   elTyped.innerHTML = out.join("");
 }
 
-// Check if level is completed
 function checkLevelCompletion() {
   if (typedChars.length >= targetText.length && !levelCompleted) {
     levelCompleted = true;
     stopTimer();
     
-    // LEVEL 3: Show global drying bar
     if (level === 3) {
       globalDryingBar.style.display = 'block';
       globalDryingProgress = 0;
@@ -263,7 +289,6 @@ function checkLevelCompletion() {
         }
       }, 50);
     } else {
-      // LEVEL 1 & 2: Show completion modal immediately
       showCompletionModal();
     }
   }
@@ -281,7 +306,6 @@ function showCompletionModal() {
       hideModal();
       resetModalButtons();
       applyLevel(level + 1);
-      // Refocus after advancing level
       setTimeout(() => {
         typingArea.focus();
       }, 200);
@@ -295,7 +319,6 @@ function showCompletionModal() {
       hideModal();
       resetModalButtons();
       restart();
-      // Refocus after restart
       setTimeout(() => {
         typingArea.focus();
       }, 200);
@@ -304,7 +327,6 @@ function showCompletionModal() {
     modalIcon.textContent = '🎉';
     modalText.textContent = `LEVEL ${level} COMPLETE!\n\nGreat job! Ready for the next challenge?`;
     
-    // Clear and add custom buttons
     const modalBox = modalBtn.parentElement;
     modalBtn.style.display = 'none';
     
@@ -319,7 +341,6 @@ function showCompletionModal() {
     modalBox.appendChild(buttonContainer);
     modalOverlay.classList.add('show');
     
-    // Don't auto-hide for completion modal
     if (modalTimeout) {
       clearTimeout(modalTimeout);
       modalTimeout = null;
@@ -339,14 +360,25 @@ function recomputeCorrectCount() {
 
 function updateBackground() {
   const body = document.body;
-  body.className = ''; // Clear all classes
+  body.className = '';
+  
+  // Deactivate all videos
+  bgVideoHoney.classList.remove('active');
+  bgVideoGum.classList.remove('active');
+  bgVideoGlue.classList.remove('active');
   
   if (level === 1) {
     body.classList.add('level-honey');
+    bgVideoHoney.classList.add('active');
+    bgVideoHoney.play().catch(() => {});
   } else if (level === 2) {
     body.classList.add('level-gum');
+    bgVideoGum.classList.add('active');
+    bgVideoGum.play().catch(() => {});
   } else {
     body.classList.add('level-glue');
+    bgVideoGlue.classList.add('active');
+    bgVideoGlue.play().catch(() => {});
   }
 }
 
@@ -376,7 +408,6 @@ function applyLevel(newLevel) {
 function restart() {
   stopTimer();
   
-  // Clear visual effects first
   document.getElementById('honeyDrips').innerHTML = '';
   document.getElementById('bubbles').innerHTML = '';
   document.getElementById('glueFlows').innerHTML = '';
@@ -395,6 +426,8 @@ function restart() {
   honeySlowdown = false;
   globalDryingProgress = 0;
   levelCompleted = false;
+  isHoneySlow = false;
+  pendingKey = null;
   
   keyDisableIndicator.style.display = 'none';
   keyDisableBar.style.width = '0%';
@@ -414,7 +447,6 @@ function restart() {
 
 // ---------- KEY HANDLER ----------
 typingArea.addEventListener("keydown", (e) => {
-  // Prevent typing if level is completed
   if (levelCompleted) return;
   
   if (e.key === 'Escape' && modalOverlay.classList.contains('show')) {
@@ -426,7 +458,7 @@ typingArea.addEventListener("keydown", (e) => {
     startTimerIfNeeded();
   }
 
-  // LEVEL 3: Handle spacebar for key disable feature
+  // LEVEL 3: Handle spacebar for key disable
   if (level === 3 && disabledKey && !isDrying && e.key === ' ') {
     e.preventDefault();
     spacebarPresses++;
@@ -468,8 +500,8 @@ typingArea.addEventListener("keydown", (e) => {
     e.preventDefault();
     
     if (typedChars.length > 0) {
-      // LEVEL 2: Rubber banding effect
-      if (level === 2 && Math.random() < 0.2) {
+      // LEVEL 2: Rubber banding (15% chance)
+      if (level === 2 && Math.random() < 0.15) {
         showModal('🔄', 'The gum snapped it back!');
         return;
       }
@@ -486,7 +518,24 @@ typingArea.addEventListener("keydown", (e) => {
   if (e.key.length !== 1) return;
   e.preventDefault();
 
-  let char = e.key;
+  // LEVEL 1: Honey slowdown effect
+  if (level === 1 && isHoneySlow) {
+    if (pendingKey) return; // Ignore if already processing a key
+    
+    pendingKey = e.key;
+    
+    if (honeySlowTimer) clearTimeout(honeySlowTimer);
+    honeySlowTimer = setTimeout(() => {
+      processKeyPress(pendingKey);
+      pendingKey = null;
+    }, 800);
+    return;
+  }
+
+  processKeyPress(e.key);
+});
+
+function processKeyPress(char) {
   totalKeystrokes++;
 
   const currentIdx = typedChars.length;
@@ -499,15 +548,15 @@ typingArea.addEventListener("keydown", (e) => {
     correctCount++;
   }
 
-  // ALL LEVELS: Random letter repeat glitch (happens even when typing correctly!)
-  if (Math.random() < 0.3) {
-    const repeatCount = Math.floor(Math.random() * 3) + 2;
+  // Reduced letter repeat glitch
+  const repeatChance = level === 1 ? 0.15 : (level === 2 ? 0.20 : 0.25);
+  if (Math.random() < repeatChance) {
+    const repeatCount = level === 1 ? 2 : (Math.floor(Math.random() * 2) + 2);
     for (let i = 0; i < repeatCount; i++) {
       typedChars.push(char);
     }
     showModal('⚠️', 'Letter stuck and repeated!');
     
-    // LEVEL 1: Add honey drip
     if (level === 1) {
       window.Punishments.addHoneyDrip();
     }
@@ -519,20 +568,20 @@ typingArea.addEventListener("keydown", (e) => {
   }
 
   // LEVEL 1: Random honey drips
-  if (level === 1 && Math.random() < 0.3) {
+  if (level === 1 && Math.random() < 0.2) {
     window.Punishments.addHoneyDrip();
   }
 
-  // LEVEL 2: Sticky clusters (e and r stick together) - EXAGGERATED
-  if (level === 2 && char.toLowerCase() === 'e') {
-    typedChars.push('e', 'e', 'e', 'r', 'r'); // More letters stuck!
-    showModal('🫧', 'EEERRR stuck together!');
+  // LEVEL 2: Sticky clusters (reduced frequency)
+  if (level === 2 && char.toLowerCase() === 'e' && Math.random() < 0.25) {
+    typedChars.push('e', 'r', 'r');
+    showModal('🫧', 'ERR stuck together!');
     
-    stretchingChar = 'eeerr';
+    stretchingChar = 'err';
     setTimeout(() => {
       stretchingChar = null;
       renderTyped();
-    }, 2500); // Longer stretch time
+    }, 1200);
     
     recomputeCorrectCount();
     renderTyped();
@@ -540,20 +589,20 @@ typingArea.addEventListener("keydown", (e) => {
     return;
   }
 
-  // LEVEL 2: Random stretch effect - EXAGGERATED
-  if (level === 2 && Math.random() < 0.3) {
+  // LEVEL 2: Random stretch effect
+  if (level === 2 && Math.random() < 0.20) {
     stretchingChar = char;
     setTimeout(() => {
       stretchingChar = null;
       renderTyped();
-    }, 2500); // Longer stretch
+    }, 1200);
   }
 
   typedChars.push(char);
   
-  // LEVEL 3: Word jumble on mistakes
-  if (level === 3 && mistakes > 0 && mistakes % 3 === 0 && typedChars.length > 10) {
-    typedChars = window.Punishments.jumbleLastFewWords(typedChars, 30);
+  // LEVEL 3: Word jumble (reduced frequency)
+  if (level === 3 && mistakes > 0 && mistakes % 5 === 0 && typedChars.length > 10) {
+    typedChars = window.Punishments.jumbleLastFewWords(typedChars, 20);
     showModal('🌀', 'The glue scrambled your words!');
   }
 
@@ -561,15 +610,13 @@ typingArea.addEventListener("keydown", (e) => {
   renderTyped();
   updateStats();
   
-  // Check if level completed
   checkLevelCompletion();
-});
+}
 
 // ---------- EVENTS ----------
 restartBtn.addEventListener("click", (e) => {
   e.preventDefault();
   restart();
-  // Refocus after restart
   setTimeout(() => {
     typingArea.focus();
   }, 150);
@@ -584,7 +631,6 @@ levelBtns.forEach(btn => {
     if (newLevel && newLevel !== level) {
       applyLevel(newLevel);
     }
-    // Refocus after level change
     setTimeout(() => {
       typingArea.focus();
     }, 200);

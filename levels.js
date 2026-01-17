@@ -40,7 +40,6 @@ window.AudioManager = {
   },
   
   init() {
-    // Simple silent audio for now - you can replace with actual sound URLs
     this.sounds.honey = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
     this.sounds.gum = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
     this.sounds.glue = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
@@ -70,18 +69,18 @@ window.AudioManager = {
 window.LEVELS = {
   1: {
     name: "Honey Level",
-    generator: () => generateSentence(12),
+    generator: () => generateSentence(10), // Easier - 10 words
     theme: "honey",
     features: {
       inputLatency: true,
       drippingHoney: true,
       repeatOnWrong: true,
-      slowTyping: true  // New feature for honey slowness
+      slowTyping: true
     }
   },
   2: {
     name: "Chewing Gum Level",
-    generator: () => generateMultiline(2, 10), // Reduced from 4 lines to 2
+    generator: () => generateMultiline(3, 8), // Medium - 3 lines, 8 words each
     theme: "gum",
     features: {
       rubberBanding: true,
@@ -89,19 +88,19 @@ window.LEVELS = {
       stickyClusters: true,
       repeatOnWrong: true,
       popups: true,
-      exaggerateStretch: true  // New feature for exaggerated stretching
+      realisticStretch: true
     }
   },
   3: {
     name: "Glue Level",
-    generator: () => generateMultiline(6, 10),
+    generator: () => generateMultiline(5, 10), // Hard - 5 lines, 10 words each
     theme: "glue",
     features: {
       hardStuckKeys: true,
       repeatOnWrong: true,
       popups: true,
       wordJumble: true,
-      dryingBar: true  // New feature for drying progress
+      dryingBar: true
     }
   }
 };
