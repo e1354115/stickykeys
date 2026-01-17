@@ -120,6 +120,7 @@ let honeyDripTimerId = null;
 let globalDryingProgress = 0;
 let globalDryingTimerId = null;
 let levelCompleted = false;
+let isGloballyDrying = false; // NEW: Track if glue is drying at level completion
 
 // ---------- HELPERS ----------
 function pickText() {
@@ -263,8 +264,9 @@ function checkLevelCompletion() {
     levelCompleted = true;
     stopTimer();
     
-    // LEVEL 3: Show drying bar
+    // LEVEL 3: Show drying bar and BLOCK TYPING
     if (level === 3 && levelConfig.features.dryingBar) {
+      isGloballyDrying = true; // Block all typing during drying
       globalDryingBar.style.display = 'block';
       globalDryingProgress = 0;
       globalDryingFill.style.width = '0%';
@@ -278,6 +280,7 @@ function checkLevelCompletion() {
           clearInterval(globalDryingTimerId);
           globalDryingTimerId = null;
           globalDryingBar.style.display = 'none';
+          isGloballyDrying = false;
           showCompletionModal();
         }
       }, 50);
@@ -421,6 +424,7 @@ function restart() {
   isDrying = false;
   globalDryingProgress = 0;
   levelCompleted = false;
+  isGloballyDrying = false;
   
   keyDisableIndicator.style.display = 'none';
   keyDisableBar.style.width = '0%';
@@ -439,7 +443,8 @@ function restart() {
 
 // ---------- KEY HANDLER ----------
 typingArea.addEventListener("keydown", (e) => {
-  if (levelCompleted) return;
+  // BLOCK if level completed OR globally drying
+  if (levelCompleted || isGloballyDrying) return;
   
   // Don't allow typing if modal is open and waiting for user
   if (isModalWaitingForUser) {
@@ -547,10 +552,12 @@ function processKeyPress(char) {
     }
   }
 
-  // LEVEL 2: Stretching AND word jumbling
+  // LEVEL 2: Stretching AND word jumbling - BOTH can happen
   if (level === 2) {
+    typedChars.push(char);
+    
     // Stretching effect
-    if (levelConfig.features.stretchEffect && Math.random() < 0.22) {
+    if (levelConfig.features.stretchEffect && Math.random() < 0.20) {
       stretchingChar = char;
       setTimeout(() => {
         stretchingChar = null;
@@ -559,23 +566,23 @@ function processKeyPress(char) {
       showModal('🫧', 'Gum stretched your letters!', true);
     }
     
-    // Word jumbling/scrambling - INCREASED FREQUENCY
+    // Word scrambling - happens independently
     if (levelConfig.features.wordJumble && Math.random() < 0.25 && typedChars.length > 15) {
-      typedChars.push(char);
-      typedChars = window.Punishments.stretchAndJumbleWord(typedChars, targetText);
-      showModal('🫧', 'Gum scrambled multiple words!', true);
-      
-      recomputeCorrectCount();
-      renderTyped();
-      updateStats();
-      return;
+      typedChars = window.Punishments.stretchAndJumbleWord(typedChars);
+      showModal('🫧', 'Gum scrambled your words!', true);
     }
+    
+    recomputeCorrectCount();
+    renderTyped();
+    updateStats();
+    checkLevelCompletion();
+    return;
   }
 
   typedChars.push(char);
   
-  // LEVEL 3: Word jumble mechanic - MORE AGGRESSIVE
-  if (level === 3 && levelConfig.features.wordJumble && mistakes > 0 && mistakes % 5 === 0 && typedChars.length > 15) {
+  // LEVEL 3: Word jumble happens EVERY 3 mistakes (more frequent!)
+  if (level === 3 && levelConfig.features.wordJumble && mistakes > 0 && mistakes % 3 === 0 && typedChars.length > 20) {
     typedChars = window.Punishments.jumbleLastFewWords(typedChars, 60);
     showModal('🌀', 'Glue scrambled many words!', true);
   }

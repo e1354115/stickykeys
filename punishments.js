@@ -13,7 +13,9 @@ window.Punishments = (function () {
     container.appendChild(drip);
     
     setTimeout(() => {
-      container.removeChild(drip);
+      if (container.contains(drip)) {
+        container.removeChild(drip);
+      }
     }, 3000);
   }
 
@@ -32,7 +34,9 @@ window.Punishments = (function () {
     container.appendChild(bubble);
     
     setTimeout(() => {
-      container.removeChild(bubble);
+      if (container.contains(bubble)) {
+        container.removeChild(bubble);
+      }
     }, duration * 1000);
   }
 
@@ -48,18 +52,16 @@ window.Punishments = (function () {
     container.appendChild(flow);
     
     setTimeout(() => {
-      container.removeChild(flow);
+      if (container.contains(flow)) {
+        container.removeChild(flow);
+      }
     }, 4000);
   }
 
-  // Improved word jumbling - scrambles last few words AGGRESSIVELY
-  function jumbleLastFewWords(typedChars, chunkSize = 50) {
-    const start = Math.max(0, typedChars.length - chunkSize);
-    const beforeChunk = typedChars.slice(0, start).join("");
-    const chunk = typedChars.slice(start).join("");
-    
-    // Split into words
-    const words = chunk.trim().split(/\s+/);
+  // GLUE LEVEL - Aggressive word scrambling
+  function jumbleLastFewWords(typedChars, chunkSize = 60) {
+    const typedStr = typedChars.join("");
+    const words = typedStr.trim().split(/\s+/);
     
     if (words.length <= 3) return typedChars;
 
@@ -69,7 +71,7 @@ window.Punishments = (function () {
     const wordsToKeep = words.slice(0, startIdx);
     const wordsToMix = words.slice(startIdx);
 
-    // Fisher-Yates shuffle - do it TWICE for more chaos
+    // Fisher-Yates shuffle - do it TWICE for maximum chaos
     for (let shuffle = 0; shuffle < 2; shuffle++) {
       for (let i = wordsToMix.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -77,15 +79,12 @@ window.Punishments = (function () {
       }
     }
 
-    const newChunk = [...wordsToKeep, ...wordsToMix].join(" ");
-    const result = beforeChunk + newChunk;
-    return result.split("");
+    const newStr = [...wordsToKeep, ...wordsToMix].join(" ");
+    return newStr.split("");
   }
 
-  // Aggressive function for gum level - scrambles MULTIPLE words completely
-  function stretchAndJumbleWord(typedChars, targetText) {
-    if (typedChars.length < 15) return typedChars;
-    
+  // GUM LEVEL - Scrambles multiple words AND their letters
+  function stretchAndJumbleWord(typedChars) {
     const typedStr = typedChars.join("");
     const words = typedStr.trim().split(/\s+/);
     
@@ -97,11 +96,11 @@ window.Punishments = (function () {
     const wordsToKeep = words.slice(0, startIdx);
     const wordsToScramble = words.slice(startIdx);
     
-    // Scramble BOTH word order AND letters within words
+    // Scramble BOTH word order AND letters within each word
     const scrambledWords = wordsToScramble.map(word => {
       if (word.length <= 2) return word;
       
-      // Completely scramble all letters
+      // Completely scramble all letters in the word
       const letters = word.split('');
       for (let i = letters.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
