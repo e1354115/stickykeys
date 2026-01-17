@@ -47,6 +47,10 @@ function hideModal() {
     clearTimeout(modalTimeout);
     modalTimeout = null;
   }
+  // Refocus typing area after modal closes
+  setTimeout(() => {
+    typingArea.focus();
+  }, 100);
 }
 
 function resetModalButtons() {
@@ -60,9 +64,15 @@ function resetModalButtons() {
   modalBtn.style.display = '';
 }
 
-modalBtn.addEventListener("click", hideModal);
+modalBtn.addEventListener("click", (e) => {
+  hideModal();
+  e.preventDefault();
+});
 modalOverlay.addEventListener("click", (e) => {
-  if (e.target === modalOverlay) hideModal();
+  if (e.target === modalOverlay) {
+    hideModal();
+    e.preventDefault();
+  }
 });
 
 window.showModal = showModal;
@@ -107,14 +117,14 @@ function startTimerIfNeeded() {
     window.Punishments.startPopups();
   }
   
-  // Start bubble generation for level 2
+  // LEVEL 2: Start bubble generation
   if (level === 2) {
     bubbleTimerId = setInterval(() => {
       window.Punishments.addBubble();
     }, 500);
   }
   
-  // Start glue flow generation for level 3
+  // LEVEL 3: Start glue flow generation
   if (level === 3) {
     glueTimerId = setInterval(() => {
       window.Punishments.addGlueFlow();
@@ -234,7 +244,7 @@ function checkLevelCompletion() {
     levelCompleted = true;
     stopTimer();
     
-    // Level 3: Show global drying bar
+    // LEVEL 3: Show global drying bar
     if (level === 3) {
       globalDryingBar.style.display = 'block';
       globalDryingProgress = 0;
@@ -253,7 +263,7 @@ function checkLevelCompletion() {
         }
       }, 50);
     } else {
-      // Level 1 & 2: Show completion modal immediately
+      // LEVEL 1 & 2: Show completion modal immediately
       showCompletionModal();
     }
   }
@@ -271,6 +281,10 @@ function showCompletionModal() {
       hideModal();
       resetModalButtons();
       applyLevel(level + 1);
+      // Refocus after advancing level
+      setTimeout(() => {
+        typingArea.focus();
+      }, 200);
     };
     
     const restartLevelBtn = document.createElement('button');
@@ -281,6 +295,10 @@ function showCompletionModal() {
       hideModal();
       resetModalButtons();
       restart();
+      // Refocus after restart
+      setTimeout(() => {
+        typingArea.focus();
+      }, 200);
     };
     
     modalIcon.textContent = '🎉';
@@ -407,22 +425,8 @@ typingArea.addEventListener("keydown", (e) => {
   if (!['Shift', 'Alt', 'Meta', 'Control', 'CapsLock', 'Tab'].includes(e.key)) {
     startTimerIfNeeded();
   }
-  
-  const progressPercent = (typedChars.length / targetText.length) * 100;
-  if (level === 1 && !honeySlowdown && e.key.length === 1 && progressPercent > 70) {
-    honeySlowdown = true;
-    typingArea.classList.add('honey-slow');
-    
-    if (honeySlowdownTimer) clearTimeout(honeySlowdownTimer);
-    honeySlowdownTimer = setTimeout(() => {
-      typingArea.classList.remove('honey-slow');
-    }, 300); // Reduced from 800ms to 300ms
-    
-    e.preventDefault();
-    return; // Block this keystroke to create slowdown
-  }
 
-  // Handle spacebar for key disable feature
+  // LEVEL 3: Handle spacebar for key disable feature
   if (level === 3 && disabledKey && !isDrying && e.key === ' ') {
     e.preventDefault();
     spacebarPresses++;
@@ -453,7 +457,7 @@ typingArea.addEventListener("keydown", (e) => {
     return;
   }
   
-  // Block disabled key
+  // LEVEL 3: Block disabled key
   if (disabledKey && e.key.toLowerCase() === disabledKey.toLowerCase()) {
     e.preventDefault();
     showModal('🚫', `Key "${disabledKey}" is stuck in glue!\nPress SPACEBAR ${10 - spacebarPresses} more times!`);
@@ -464,7 +468,7 @@ typingArea.addEventListener("keydown", (e) => {
     e.preventDefault();
     
     if (typedChars.length > 0) {
-      // Level 2: rubber banding effect
+      // LEVEL 2: Rubber banding effect
       if (level === 2 && Math.random() < 0.2) {
         showModal('🔄', 'The gum snapped it back!');
         return;
@@ -491,34 +495,35 @@ typingArea.addEventListener("keydown", (e) => {
 
   if (!isCorrect) {
     mistakes++;
-    
-    // Repeat on wrong (all levels)
-    if (Math.random() < 0.5) {
-      const repeatCount = Math.floor(Math.random() * 3) + 2;
-      for (let i = 0; i < repeatCount; i++) {
-        typedChars.push(char);
-      }
-      showModal('⚠️', 'Letter stuck and repeated!');
-      
-      if (level === 1) {
-        window.Punishments.addHoneyDrip();
-      }
-      
-      recomputeCorrectCount();
-      renderTyped();
-      updateStats();
-      return;
-    }
   } else {
     correctCount++;
   }
 
-  // Level 1: Random honey drips
+  // ALL LEVELS: Random letter repeat glitch (happens even when typing correctly!)
+  if (Math.random() < 0.3) {
+    const repeatCount = Math.floor(Math.random() * 3) + 2;
+    for (let i = 0; i < repeatCount; i++) {
+      typedChars.push(char);
+    }
+    showModal('⚠️', 'Letter stuck and repeated!');
+    
+    // LEVEL 1: Add honey drip
+    if (level === 1) {
+      window.Punishments.addHoneyDrip();
+    }
+    
+    recomputeCorrectCount();
+    renderTyped();
+    updateStats();
+    return;
+  }
+
+  // LEVEL 1: Random honey drips
   if (level === 1 && Math.random() < 0.3) {
     window.Punishments.addHoneyDrip();
   }
 
-  // Level 2: Sticky clusters (e and r stick together) - EXAGGERATED
+  // LEVEL 2: Sticky clusters (e and r stick together) - EXAGGERATED
   if (level === 2 && char.toLowerCase() === 'e') {
     typedChars.push('e', 'e', 'e', 'r', 'r'); // More letters stuck!
     showModal('🫧', 'EEERRR stuck together!');
@@ -535,7 +540,7 @@ typingArea.addEventListener("keydown", (e) => {
     return;
   }
 
-  // Level 2: Random stretch effect - EXAGGERATED
+  // LEVEL 2: Random stretch effect - EXAGGERATED
   if (level === 2 && Math.random() < 0.3) {
     stretchingChar = char;
     setTimeout(() => {
@@ -546,7 +551,7 @@ typingArea.addEventListener("keydown", (e) => {
 
   typedChars.push(char);
   
-  // Level 3: Word jumble on mistakes
+  // LEVEL 3: Word jumble on mistakes
   if (level === 3 && mistakes > 0 && mistakes % 3 === 0 && typedChars.length > 10) {
     typedChars = window.Punishments.jumbleLastFewWords(typedChars, 30);
     showModal('🌀', 'The glue scrambled your words!');
@@ -564,6 +569,10 @@ typingArea.addEventListener("keydown", (e) => {
 restartBtn.addEventListener("click", (e) => {
   e.preventDefault();
   restart();
+  // Refocus after restart
+  setTimeout(() => {
+    typingArea.focus();
+  }, 150);
 });
 
 typingArea.addEventListener("click", () => typingArea.focus());
@@ -575,6 +584,10 @@ levelBtns.forEach(btn => {
     if (newLevel && newLevel !== level) {
       applyLevel(newLevel);
     }
+    // Refocus after level change
+    setTimeout(() => {
+      typingArea.focus();
+    }, 200);
   });
 });
 
