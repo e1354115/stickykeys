@@ -3,34 +3,86 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sticky Keys Typing Test (Evil)</title>
+  <title>Sticky Keys - Mario Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <h1>Sticky Keys Typing Test (Evil)</h1>
+  <!-- Animated clouds -->
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
 
-  <div class="card">
-    <div class="row">
-      <div class="stat">Level: <span id="levelLabel">1</span></div>
-      <div class="stat">Time: <span id="time">0.0</span>s</div>
-      <div class="stat">WPM: <span id="wpm">0</span></div>
-      <div class="stat">Accuracy: <span id="acc">100</span>%</div>
-      <div class="stat">Mistakes: <span id="mistakes">0</span></div>
-      <div class="stat">Curse: <span id="curseState">off</span></div>
+  <!-- Hills -->
+  <div class="hill hill-1"></div>
+  <div class="hill hill-2"></div>
+
+  <!-- Bushes -->
+  <div class="bush bush-1">
+    <div class="bush-circle"></div>
+  </div>
+  <div class="bush bush-2">
+    <div class="bush-circle"></div>
+  </div>
+  <div class="bush bush-3">
+    <div class="bush-circle"></div>
+  </div>
+
+  <div class="container">
+    <h1>⌨️ STICKY KEYS ⌨️</h1>
+
+    <div class="game-card">
+      <div class="stats-row">
+        <div class="stat-block">
+          <span class="stat-label">WORLD</span>
+          <span class="stat-value" id="levelLabel">1</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-label">TIME</span>
+          <span class="stat-value" id="time">0.0</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-label">WPM</span>
+          <span class="stat-value" id="wpm">0</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-label">ACCURACY</span>
+          <span class="stat-value"><span id="acc">100</span>%</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-label">MISTAKES</span>
+          <span class="stat-value" id="mistakes">0</span>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button class="mario-btn level-btn" data-level="1"><span>WORLD 1</span></button>
+        <button class="mario-btn level-btn" data-level="2"><span>WORLD 2</span></button>
+        <button class="mario-btn level-btn" data-level="3"><span>WORLD 3</span></button>
+        <button class="mario-btn restart-btn" id="restartBtn">RESTART</button>
+      </div>
+
+      <div class="target-area">
+        <span class="target-label">⭐ TARGET TEXT:</span>
+        <div class="target-text" id="target"></div>
+      </div>
+
+      <div class="typing-area" id="typingArea" tabindex="0">
+        <div class="typed-text" id="typed"></div>
+      </div>
     </div>
+  </div>
 
-    <div class="row" style="margin-top: 12px;">
-      <button class="levelBtn" data-level="1">Level 1</button>
-      <button class="levelBtn" data-level="2">Level 2</button>
-      <button class="levelBtn" data-level="3">Level 3</button>
-      <button id="restartBtn">Restart</button>
-    </div>
+  <div class="ground"></div>
 
-    <p class="target"><b>Target:</b> <span id="target"></span></p>
-
-    <div id="typingArea" tabindex="0" aria-label="Typing area">
-      <div class="typed" id="typed"></div>
-      <div class="hint" id="hintText"></div>
+  <!-- Custom Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <span class="modal-icon" id="modalIcon">⚠️</span>
+      <div class="modal-text" id="modalText">Message</div>
+      <button class="modal-btn" id="modalBtn">OK</button>
     </div>
   </div>
 

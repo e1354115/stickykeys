@@ -7,41 +7,81 @@ const elTime = document.getElementById("time");
 const elWpm = document.getElementById("wpm");
 const elAcc = document.getElementById("acc");
 const elMistakes = document.getElementById("mistakes");
-const elCurse = document.getElementById("curseState");
-const elHint = document.getElementById("hintText");
 const elLevelLabel = document.getElementById("levelLabel");
 
 const typingArea = document.getElementById("typingArea");
 const restartBtn = document.getElementById("restartBtn");
-const levelBtns = Array.from(document.querySelectorAll(".levelBtn"));
+const levelBtns = Array.from(document.querySelectorAll(".level-btn"));
+
+const modalOverlay = document.getElementById("modalOverlay");
+const modalIcon = document.getElementById("modalIcon");
+const modalText = document.getElementById("modalText");
+const modalBtn = document.getElementById("modalBtn");
+
+// ---------- MODAL SYSTEM ----------
+function showModal(icon, message) {
+  modalIcon.textContent = icon;
+  modalText.textContent = message;
+  modalOverlay.classList.add("show");
+}
+
+function hideModal() {
+  modalOverlay.classList.remove("show");
+}
+
+modalBtn.addEventListener("click", hideModal);
+modalOverlay.addEventListener("click", (e) => {
+  if (e.target === modalOverlay) hideModal();
+});
+
+// Make showModal globally available for punishments.js
+window.showModal = showModal;
 
 // ---------- STATE ----------
 let level = 1;
 let levelConfig = window.LEVELS[level];
-
 let targetText = "";
 let typedChars = [];
 let startTime = null;
 let timerId = null;
-
 let mistakes = 0;
 let correctCount = 0;
 let totalKeystrokes = 0;
-
-// sticky repeat
 let cursePending = false;
+
+// ---------- SKY DARKENING & SHAKE ----------
+function updateCurseVisuals() {
+  document.body.classList.remove('curse-level-1', 'curse-level-2', 'curse-level-3', 'curse-level-4', 'curse-level-5');
+  
+  if (mistakes >= 20) {
+    document.body.classList.add('curse-level-5');
+  } else if (mistakes >= 15) {
+    document.body.classList.add('curse-level-4');
+  } else if (mistakes >= 10) {
+    document.body.classList.add('curse-level-3');
+  } else if (mistakes >= 5) {
+    document.body.classList.add('curse-level-2');
+  } else if (mistakes >= 2) {
+    document.body.classList.add('curse-level-1');
+  }
+}
+
+function triggerShake() {
+  document.body.classList.add('shake');
+  setTimeout(() => {
+    document.body.classList.remove('shake');
+  }, 500);
+}
 
 // ---------- HELPERS ----------
 function pickText() {
-  const arr = levelConfig.texts;
-  return arr[Math.floor(Math.random() * arr.length)];
+  return levelConfig.generator();
 }
 
 function startTimerIfNeeded() {
   if (startTime !== null) return;
   startTime = performance.now();
   timerId = setInterval(updateStats, 100);
-
   if (levelConfig.punishments.popups) {
     window.Punishments.startPopups();
   }
@@ -50,7 +90,6 @@ function startTimerIfNeeded() {
 function stopTimer() {
   if (timerId) clearInterval(timerId);
   timerId = null;
-
   window.Punishments.stopPopups();
 }
 
@@ -75,7 +114,6 @@ function updateStats() {
   elWpm.textContent = computeWPM();
   elAcc.textContent = computeAccuracy();
   elMistakes.textContent = mistakes;
-  elCurse.innerHTML = cursePending ? "<span class='curse'>ON (next key repeats)</span>" : "off";
   elLevelLabel.textContent = String(level);
 }
 
@@ -93,7 +131,7 @@ function renderTyped() {
   for (let i = 0; i < typedChars.length; i++) {
     const ch = typedChars[i];
     const expected = targetText[i] ?? "";
-    const cls = (ch === expected) ? "good" : "bad";
+    const cls = (ch === expected) ? "char-good" : "char-bad";
     out.push(`<span class="${cls}">${escapeHtml(ch)}</span>`);
   }
   elTyped.innerHTML = out.join("");
@@ -111,32 +149,27 @@ function isTypeableKey(e) {
   return e.key.length === 1;
 }
 
-// ---------- LEVEL / RESTART ----------
 function applyLevel(newLevel) {
   level = newLevel;
   levelConfig = window.LEVELS[level];
-
   levelBtns.forEach(btn => {
     btn.classList.toggle("active", Number(btn.dataset.level) === level);
   });
-
-  elHint.textContent = levelConfig.hint;
   restart();
 }
 
 function restart() {
   stopTimer();
-
   targetText = pickText();
   typedChars = [];
   startTime = null;
-
   mistakes = 0;
   correctCount = 0;
   totalKeystrokes = 0;
-
   cursePending = false;
-
+  
+  document.body.classList.remove('curse-level-1', 'curse-level-2', 'curse-level-3', 'curse-level-4', 'curse-level-5', 'shake');
+  
   elTarget.textContent = targetText;
   renderTyped();
   updateStats();
@@ -146,12 +179,10 @@ function restart() {
 // ---------- KEY HANDLER ----------
 typingArea.addEventListener("keydown", (e) => {
   if (e.key === " ") e.preventDefault();
-
   if (e.key !== "Shift" && e.key !== "Alt" && e.key !== "Meta" && e.key !== "Control") {
     startTimerIfNeeded();
   }
 
-  // Backspace
   if (e.key === "Backspace") {
     e.preventDefault();
     if (typedChars.length > 0) {
@@ -170,10 +201,9 @@ typingArea.addEventListener("keydown", (e) => {
   let char = e.key;
   totalKeystrokes++;
 
-  // Sticky repeat
   let repeatTimes = 1;
   if (levelConfig.punishments.stickyRepeat && cursePending) {
-    repeatTimes = Math.floor(Math.random() * 5) + 3; // 3..7
+    repeatTimes = Math.floor(Math.random() * 5) + 3;
     cursePending = false;
   }
 
@@ -184,9 +214,11 @@ typingArea.addEventListener("keydown", (e) => {
 
   if (char !== expected) {
     mistakes++;
-
+    
+    triggerShake();
+    updateCurseVisuals();
+    
     if (levelConfig.punishments.stickyRepeat) cursePending = true;
-
     if (levelConfig.punishments.wordJumble) {
       typedChars = window.Punishments.jumbleLastFewWords(typedChars, 40);
     }
@@ -204,7 +236,6 @@ typingArea.addEventListener("keydown", (e) => {
 // ---------- EVENTS ----------
 restartBtn.addEventListener("click", () => restart());
 typingArea.addEventListener("click", () => typingArea.focus());
-
 levelBtns.forEach(btn => {
   btn.addEventListener("click", () => applyLevel(Number(btn.dataset.level)));
 });

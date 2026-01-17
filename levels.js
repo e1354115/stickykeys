@@ -1,50 +1,74 @@
 // levels.js
-// Only level configs live here.
+// Level configurations with dynamic sentence generation
 
-window.LEVELS = {
-    1: {
-      name: "Level 1",
-      hint: "Level 1: one long sentence. Wrong key → next key repeats 3–7 times.",
-      texts: [
-        "the quick brown fox jumps over the lazy dog but the keyboard is plotting revenge",
-        "typing should be relaxing until you make one tiny mistake and everything falls apart",
-        "this is a normal typing test except it absolutely is not normal at all"
-      ],
-      punishments: {
-        stickyRepeat: true,
-        popups: false,
-        wordJumble: false
-      }
-    },
+// ---------- SENTENCE GENERATORS ----------
+const subjects = ["the quick fox", "a lazy cat", "your keyboard", "the cursor", "mario", "luigi", "bowser", "princess peach", "yoshi", "toad"];
+const verbs = ["jumps over", "runs past", "defeats", "helps", "chases", "escapes from", "saves", "finds", "rescues", "avoids"];
+const objects = ["the lazy dog", "a green pipe", "the castle", "mushroom kingdom", "a fire flower", "flying koopas", "the finish line", "hidden blocks", "secret coins", "the flagpole"];
+const connectors = ["but", "and", "while", "because", "although", "however", "meanwhile", "suddenly", "unexpectedly", "fortunately"];
+const actions = ["the game gets harder", "everything falls apart", "chaos begins", "mistakes multiply", "keys stick together", "words start dancing", "the screen shakes", "reality breaks down", "panic sets in", "victory seems impossible"];
+
+function generateSentence(wordCount) {
+  const sentences = [];
+  let currentWords = 0;
   
-    2: {
-      name: "Level 2",
-      hint: "Level 2: 3 lines. Sticky repeat + random popups.",
-      texts: [
-        "line one: i will type carefully\nline two: surely nothing bad happens\nline three: famous last words",
-        "line one: focus\nline two: breathe\nline three: why is there a popup",
-        "line one: okay\nline two: okay\nline three: not okay"
-      ],
-      punishments: {
-        stickyRepeat: true,
-        popups: true,
-        wordJumble: false
-      }
-    },
-  
-    3: {
-      name: "Level 3",
-      hint: "Level 3: 5 lines. Sticky repeat + popups + words jumble up (on mistake).",
-      texts: [
-        "line one: this is fine\nline two: still fine\nline three: i can handle this\nline four: why are words moving\nline five: i regret everything",
-        "line one: calm\nline two: chaos\nline three: more chaos\nline four: maximum chaos\nline five: keyboard apocalypse",
-        "line one: i love typing\nline two: i love typing\nline three: i do not love typing\nline four: why is it shuffling\nline five: make it stop"
-      ],
-      punishments: {
-        stickyRepeat: true,
-        popups: true,
-        wordJumble: true
-      }
+  while (currentWords < wordCount) {
+    const subject = subjects[Math.floor(Math.random() * subjects.length)];
+    const verb = verbs[Math.floor(Math.random() * verbs.length)];
+    const object = objects[Math.floor(Math.random() * objects.length)];
+    
+    let sentence = `${subject} ${verb} ${object}`;
+    currentWords += sentence.split(' ').length;
+    
+    // Add connectors and actions for variety
+    if (currentWords < wordCount - 5 && Math.random() > 0.5) {
+      const connector = connectors[Math.floor(Math.random() * connectors.length)];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      sentence += ` ${connector} ${action}`;
+      currentWords += (connector.split(' ').length + action.split(' ').length);
     }
-  };
+    
+    sentences.push(sentence);
+  }
   
+  return sentences.join(' ');
+}
+
+function generateMultiline(lines, wordsPerLine) {
+  const result = [];
+  for (let i = 0; i < lines; i++) {
+    result.push(`line ${i + 1}: ${generateSentence(wordsPerLine)}`);
+  }
+  return result.join('\n');
+}
+
+// ---------- LEVELS ----------
+window.LEVELS = {
+  1: {
+    name: "World 1",
+    generator: () => generateSentence(15), // ~15 words
+    punishments: {
+      stickyRepeat: true,
+      popups: false,
+      wordJumble: false
+    }
+  },
+  2: {
+    name: "World 2",
+    generator: () => generateMultiline(3, 12), // 3 lines, ~12 words each
+    punishments: {
+      stickyRepeat: true,
+      popups: true,
+      wordJumble: false
+    }
+  },
+  3: {
+    name: "World 3",
+    generator: () => generateMultiline(5, 15), // 5 lines, ~15 words each
+    punishments: {
+      stickyRepeat: true,
+      popups: true,
+      wordJumble: true
+    }
+  }
+};
