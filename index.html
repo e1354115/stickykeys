@@ -3,81 +3,82 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sticky Keys - Mario Edition</title>
+  <title>Sticky Keys Game</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <!-- Animated clouds -->
-  <div class="cloud cloud-1"></div>
-  <div class="cloud cloud-2"></div>
-  <div class="cloud cloud-3"></div>
-
-  <!-- Hills -->
-  <div class="hill hill-1"></div>
-  <div class="hill hill-2"></div>
-
-  <!-- Bushes -->
-  <div class="bush bush-1">
-    <div class="bush-circle"></div>
-  </div>
-  <div class="bush bush-2">
-    <div class="bush-circle"></div>
-  </div>
-  <div class="bush bush-3">
-    <div class="bush-circle"></div>
-  </div>
-
-  <div class="container">
-    <h1>⌨️ STICKY KEYS ⌨️</h1>
-
-    <div class="game-card">
-      <div class="stats-row">
-        <div class="stat-block">
-          <span class="stat-label">WORLD</span>
-          <span class="stat-value" id="levelLabel">1</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-label">TIME</span>
-          <span class="stat-value" id="time">0.0</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-label">WPM</span>
-          <span class="stat-value" id="wpm">0</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-label">ACCURACY</span>
-          <span class="stat-value"><span id="acc">100</span>%</span>
-        </div>
-        <div class="stat-block">
-          <span class="stat-label">MISTAKES</span>
-          <span class="stat-value" id="mistakes">0</span>
-        </div>
-      </div>
-
-      <div class="button-row">
-        <button class="mario-btn level-btn" data-level="1"><span>WORLD 1</span></button>
-        <button class="mario-btn level-btn" data-level="2"><span>WORLD 2</span></button>
-        <button class="mario-btn level-btn" data-level="3"><span>WORLD 3</span></button>
-        <button class="mario-btn restart-btn" id="restartBtn">RESTART</button>
-      </div>
-
-      <div class="target-area">
-        <span class="target-label">⭐ TARGET TEXT:</span>
-        <div class="target-text" id="target"></div>
-      </div>
-
-      <div class="typing-area" id="typingArea" tabindex="0">
-        <div class="typed-text" id="typed"></div>
-      </div>
+  <!-- Honey drips container -->
+  <div id="honeyDrips"></div>
+  
+  <!-- Bubbles container -->
+  <div id="bubbles"></div>
+  
+  <!-- Glue flows container -->
+  <div id="glueFlows"></div>
+  
+  <!-- Global drying bar (Level 3) -->
+  <div id="globalDryingBar" style="display: none;">
+    <div id="globalDryingText">Glue is drying... 0%</div>
+    <div id="globalDryingProgress">
+      <div id="globalDryingFill"></div>
     </div>
   </div>
 
-  <div class="ground"></div>
+  <div class="container">
+    <h1 id="title">🍯 STICKY KEYS 🍯</h1>
 
-  <!-- Custom Modal -->
+    <div class="stats-row">
+      <div class="stat-block">
+        <span class="stat-label">LEVEL</span>
+        <span class="stat-value" id="level">1</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">TIME</span>
+        <span class="stat-value" id="time">0.0</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">WPM</span>
+        <span class="stat-value" id="wpm">0</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">ACCURACY</span>
+        <span class="stat-value"><span id="acc">100</span>%</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">MISTAKES</span>
+        <span class="stat-value" id="mistakes">0</span>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button class="level-btn" data-level="1">🍯 HONEY</button>
+      <button class="level-btn" data-level="2">🫧 GUM</button>
+      <button class="level-btn" data-level="3">🧴 GLUE</button>
+      <button class="restart-btn" id="restartBtn">🔄 RESTART</button>
+    </div>
+
+    <!-- Key disable indicator -->
+    <div id="keyDisableIndicator" style="display: none;">
+      <div id="keyDisableText"></div>
+      <div id="keyDisableProgress">
+        <div id="keyDisableBar"></div>
+      </div>
+    </div>
+
+    <div class="target-area">
+      <span class="target-label">⭐ TARGET TEXT:</span>
+      <div class="target-text" id="target"></div>
+    </div>
+
+    <div class="typing-area" id="typingArea" tabindex="0">
+      <div class="typed-text" id="typed"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
       <span class="modal-icon" id="modalIcon">⚠️</span>

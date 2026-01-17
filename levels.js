@@ -1,12 +1,10 @@
 // levels.js
-// Level configurations with dynamic sentence generation
+// Level configurations and sentence generators
 
 // ---------- SENTENCE GENERATORS ----------
-const subjects = ["the quick fox", "a lazy cat", "your keyboard", "the cursor", "mario", "luigi", "bowser", "princess peach", "yoshi", "toad"];
-const verbs = ["jumps over", "runs past", "defeats", "helps", "chases", "escapes from", "saves", "finds", "rescues", "avoids"];
-const objects = ["the lazy dog", "a green pipe", "the castle", "mushroom kingdom", "a fire flower", "flying koopas", "the finish line", "hidden blocks", "secret coins", "the flagpole"];
-const connectors = ["but", "and", "while", "because", "although", "however", "meanwhile", "suddenly", "unexpectedly", "fortunately"];
-const actions = ["the game gets harder", "everything falls apart", "chaos begins", "mistakes multiply", "keys stick together", "words start dancing", "the screen shakes", "reality breaks down", "panic sets in", "victory seems impossible"];
+const subjects = ["the quick fox", "a lazy cat", "your keyboard", "the cursor", "sticky fingers", "sweet honey", "elastic gum", "thick glue"];
+const verbs = ["jumps over", "runs past", "defeats", "helps", "chases", "escapes from", "saves", "finds"];
+const objects = ["the lazy dog", "a green pipe", "the castle", "sticky keys", "sweet treats", "elastic bands", "glue bottles", "hidden blocks"];
 
 function generateSentence(wordCount) {
   const sentences = [];
@@ -19,15 +17,6 @@ function generateSentence(wordCount) {
     
     let sentence = `${subject} ${verb} ${object}`;
     currentWords += sentence.split(' ').length;
-    
-    // Add connectors and actions for variety
-    if (currentWords < wordCount - 5 && Math.random() > 0.5) {
-      const connector = connectors[Math.floor(Math.random() * connectors.length)];
-      const action = actions[Math.floor(Math.random() * actions.length)];
-      sentence += ` ${connector} ${action}`;
-      currentWords += (connector.split(' ').length + action.split(' ').length);
-    }
-    
     sentences.push(sentence);
   }
   
@@ -37,38 +26,82 @@ function generateSentence(wordCount) {
 function generateMultiline(lines, wordsPerLine) {
   const result = [];
   for (let i = 0; i < lines; i++) {
-    result.push(`line ${i + 1}: ${generateSentence(wordsPerLine)}`);
+    result.push(generateSentence(wordsPerLine));
   }
   return result.join('\n');
 }
 
+// ---------- AUDIO MANAGER ----------
+window.AudioManager = {
+  sounds: {
+    honey: null,
+    gum: null,
+    glue: null
+  },
+  
+  init() {
+    // Simple silent audio for now - you can replace with actual sound URLs
+    this.sounds.honey = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
+    this.sounds.gum = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
+    this.sounds.glue = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
+  },
+  
+  play(level) {
+    const soundMap = { 1: 'honey', 2: 'gum', 3: 'glue' };
+    const sound = this.sounds[soundMap[level]];
+    if (sound) {
+      sound.loop = true;
+      sound.volume = 0.3;
+      sound.play().catch(() => {});
+    }
+  },
+  
+  stop() {
+    Object.values(this.sounds).forEach(s => {
+      if (s) {
+        s.pause();
+        s.currentTime = 0;
+      }
+    });
+  }
+};
+
 // ---------- LEVELS ----------
 window.LEVELS = {
   1: {
-    name: "World 1",
-    generator: () => generateSentence(15), // ~15 words
-    punishments: {
-      stickyRepeat: true,
-      popups: false,
-      wordJumble: false
+    name: "Honey Level",
+    generator: () => generateSentence(12),
+    theme: "honey",
+    features: {
+      inputLatency: true,
+      drippingHoney: true,
+      repeatOnWrong: true,
+      slowTyping: true  // New feature for honey slowness
     }
   },
   2: {
-    name: "World 2",
-    generator: () => generateMultiline(3, 12), // 3 lines, ~12 words each
-    punishments: {
-      stickyRepeat: true,
+    name: "Chewing Gum Level",
+    generator: () => generateMultiline(2, 10), // Reduced from 4 lines to 2
+    theme: "gum",
+    features: {
+      rubberBanding: true,
+      stretchEffect: true,
+      stickyClusters: true,
+      repeatOnWrong: true,
       popups: true,
-      wordJumble: false
+      exaggerateStretch: true  // New feature for exaggerated stretching
     }
   },
   3: {
-    name: "World 3",
-    generator: () => generateMultiline(5, 15), // 5 lines, ~15 words each
-    punishments: {
-      stickyRepeat: true,
+    name: "Glue Level",
+    generator: () => generateMultiline(6, 10),
+    theme: "glue",
+    features: {
+      hardStuckKeys: true,
+      repeatOnWrong: true,
       popups: true,
-      wordJumble: true
+      wordJumble: true,
+      dryingBar: true  // New feature for drying progress
     }
   }
 };
