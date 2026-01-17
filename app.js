@@ -49,6 +49,17 @@ function hideModal() {
   }
 }
 
+function resetModalButtons() {
+  // Remove custom button container if it exists
+  const buttonContainer = document.getElementById('completionButtonContainer');
+  if (buttonContainer) {
+    buttonContainer.remove();
+  }
+  
+  // Restore the default OK button
+  modalBtn.style.display = '';
+}
+
 modalBtn.addEventListener("click", hideModal);
 modalOverlay.addEventListener("click", (e) => {
   if (e.target === modalOverlay) hideModal();
@@ -258,6 +269,7 @@ function showCompletionModal() {
     nextLevelBtn.style.marginRight = '10px';
     nextLevelBtn.onclick = () => {
       hideModal();
+      resetModalButtons();
       applyLevel(level + 1);
     };
     
@@ -267,6 +279,7 @@ function showCompletionModal() {
     restartLevelBtn.style.background = '#EF4444';
     restartLevelBtn.onclick = () => {
       hideModal();
+      resetModalButtons();
       restart();
     };
     
@@ -278,6 +291,7 @@ function showCompletionModal() {
     modalBtn.style.display = 'none';
     
     const buttonContainer = document.createElement('div');
+    buttonContainer.id = 'completionButtonContainer';
     buttonContainer.style.display = 'flex';
     buttonContainer.style.justifyContent = 'center';
     buttonContainer.style.gap = '10px';
@@ -293,7 +307,7 @@ function showCompletionModal() {
       modalTimeout = null;
     }
   } else {
-    showModal('👑', `ALL LEVELS COMPLETE!\n\nYou are a sticky typing master!`);
+    showModal('🏆', `ALL LEVELS COMPLETE!\n\nYou are a sticky typing master!`);
   }
 }
 
@@ -394,8 +408,8 @@ typingArea.addEventListener("keydown", (e) => {
     startTimerIfNeeded();
   }
   
-  // Level 1: Honey slowdown effect
-  if (level === 1 && !honeySlowdown && e.key.length === 1) {
+  const progressPercent = (typedChars.length / targetText.length) * 100;
+  if (level === 1 && !honeySlowdown && e.key.length === 1 && progressPercent > 70) {
     honeySlowdown = true;
     typingArea.classList.add('honey-slow');
     
@@ -403,7 +417,7 @@ typingArea.addEventListener("keydown", (e) => {
     honeySlowdownTimer = setTimeout(() => {
       honeySlowdown = false;
       typingArea.classList.remove('honey-slow');
-    }, 800); // 800ms delay for honey effect
+    }, 300); // Reduced from 800ms to 300ms
     
     e.preventDefault();
     return; // Block this keystroke to create slowdown
@@ -485,7 +499,7 @@ typingArea.addEventListener("keydown", (e) => {
       for (let i = 0; i < repeatCount; i++) {
         typedChars.push(char);
       }
-      showModal('❗', 'Letter stuck and repeated!');
+      showModal('⚠️', 'Letter stuck and repeated!');
       
       if (level === 1) {
         window.Punishments.addHoneyDrip();
