@@ -415,14 +415,13 @@ typingArea.addEventListener("keydown", (e) => {
     
     if (honeySlowdownTimer) clearTimeout(honeySlowdownTimer);
     honeySlowdownTimer = setTimeout(() => {
-      honeySlowdown = false;
       typingArea.classList.remove('honey-slow');
     }, 300); // Reduced from 800ms to 300ms
     
     e.preventDefault();
     return; // Block this keystroke to create slowdown
   }
-  
+
   // Handle spacebar for key disable feature
   if (level === 3 && disabledKey && !isDrying && e.key === ' ') {
     e.preventDefault();
