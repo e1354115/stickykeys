@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sticky Keys Typing Test (Evil)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .stat { padding: 10px 12px; border: 1px solid #eee; border-radius: 10px; }
+    #typingArea {
+      margin-top: 16px;
+      border: 2px dashed #bbb;
+      border-radius: 12px;
+      padding: 14px;
+      min-height: 120px;
+      outline: none;
+    }
+    #typingArea:focus { border-color: #333; }
+    .target { font-size: 18px; line-height: 1.6; }
+    .typed  { font-size: 18px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+    .good { background: rgba(0,0,0,0.06); border-radius: 4px; padding: 0 2px; }
+    .bad  { background: rgba(255,0,0,0.18); border-radius: 4px; padding: 0 2px; }
+    .hint { color: #666; font-size: 13px; margin-top: 8px; }
+    button { padding: 10px 12px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer; }
+    button:hover { background: #f7f7f7; }
+    .curse { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Sticky Keys Typing Test (Evil)</h1>
+
+  <div class="card">
+    <div class="row">
+      <div class="stat">Time: <span id="time">0.0</span>s</div>
+      <div class="stat">WPM: <span id="wpm">0</span></div>
+      <div class="stat">Accuracy: <span id="acc">100</span>%</div>
+      <div class="stat">Mistakes: <span id="mistakes">0</span></div>
+      <div class="stat">Curse: <span id="curseState">off</span></div>
+    </div>
+
+    <p class="target"><b>Target:</b> <span id="target"></span></p>
+
+    <button id="restartBtn">Restart</button>
+
+    <div id="typingArea" tabindex="0" aria-label="Typing area">
+      <div class="typed" id="typed"></div>
+      <div class="hint">Click here, then type. Backspace works. Wrong key → next key repeats 3–7 times.</div>
+    </div>
+  </div>
+
+  <script>
+    // ------------- CONFIG -------------
+    const TEXTS = [
+      "the quick brown fox jumps over the lazy dog",
+      "nus hack n roll is chaotic and fun",
+      "typing tests are calm until the keyboard fights back"
+    ];
+
+    // ------------- STATE -------------
+    let targetText = "";
+    let typedChars = [];         // array of chars user "typed" (what we display)
+    let startTime = null;
+    let timerId = null;
+
+    let mistakes = 0;
+    let correctCount = 0;        // how many positions match the target so far
+    let totalKeystrokes = 0;
+
+    // Sticky Keys curse:
+    // after a wrong key, set cursePending = true
+    // then the next typed char gets duplicated repeatTimes times
+    let cursePending = false;
+
+    // ------------- ELEMENTS -------------
+    const elTarget = document.getElementById("target");
+    const elTyped = document.getElementById("typed");
+    const elTime = document.getElementById("time");
+    const elWpm = document.getElementById("wpm");
+    const elAcc = document.getElementById("acc");
+    const elMistakes = document.getElementById("mistakes");
+    const elCurse = document.getElementById("curseState");
+    const typingArea = document.getElementById("typingArea");
+    const restartBtn = document.getElementById("restartBtn");
+
+    // ------------- HELPERS -------------
+    function pickText() {
+      return TEXTS[Math.floor(Math.random() * TEXTS.length)];
+    }
+
+    function startTimerIfNeeded() {
+      if (startTime !== null) return;
+      startTime = performance.now();
+      timerId = setInterval(updateStats, 100);
+    }
+
+    function stopTimer() {
+      if (timerId) clearInterval(timerId);
+      timerId = null;
+    }
+
+    function elapsedSeconds() {
+      if (startTime === null) return 0;
+      return (performance.now() - startTime) / 1000;
+    }
+
+    function computeWPM() {
+      // Standard-ish: WPM = (charsTyped/5) / minutes
+      const minutes = elapsedSeconds() / 60;
+      if (minutes <= 0) return 0;
+      return Math.max(0, Math.round((typedChars.length / 5) / minutes));
+    }
+
+    function computeAccuracy() {
+      if (totalKeystrokes === 0) return 100;
+      return Math.max(0, Math.round((correctCount / totalKeystrokes) * 100));
+    }
+
+    function updateStats() {
+      elTime.textContent = elapsedSeconds().toFixed(1);
+      elWpm.textContent = computeWPM();
+      elAcc.textContent = computeAccuracy();
+      elMistakes.textContent = mistakes;
+      elCurse.innerHTML = cursePending ? "<span class='curse'>ON (next key repeats)</span>" : "off";
+    }
+
+    function renderTyped() {
+      // Render typed text with per-char correctness coloring vs target
+      const out = [];
+      for (let i = 0; i < typedChars.length; i++) {
+        const ch = typedChars[i];
+        const expected = targetText[i] ?? ""; // if user types past end
+        const cls = (ch === expected) ? "good" : "bad";
+        out.push(`<span class="${cls}">${escapeHtml(ch)}</span>`);
+      }
+      elTyped.innerHTML = out.join("");
+    }
+
+    function escapeHtml(s) {
+      return s
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function recomputeCorrectCount() {
+      let c = 0;
+      for (let i = 0; i < typedChars.length; i++) {
+        if (typedChars[i] === targetText[i]) c++;
+      }
+      correctCount = c;
+    }
+
+    function isTypeableKey(e) {
+      // Only accept single-character keys (letters, numbers, punctuation, space)
+      return e.key.length === 1;
+    }
+
+    function restart() {
+      stopTimer();
+      targetText = pickText();
+      typedChars = [];
+      startTime = null;
+      mistakes = 0;
+      correctCount = 0;
+      totalKeystrokes = 0;
+      cursePending = false;
+
+      elTarget.textContent = targetText;
+      renderTyped();
+      updateStats();
+      typingArea.focus();
+    }
+
+    // ------------- KEY HANDLER -------------
+    typingArea.addEventListener("keydown", (e) => {
+      // prevent scrolling on space
+      if (e.key === " ") e.preventDefault();
+
+      // start timer on first real interaction
+      if (e.key !== "Shift" && e.key !== "Alt" && e.key !== "Meta" && e.key !== "Control") {
+        startTimerIfNeeded();
+      }
+
+      // Handle Backspace
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        if (typedChars.length > 0) {
+          typedChars.pop();
+          // Backspace counts as a keystroke? Up to you. Here: yes, because it's annoying.
+          totalKeystrokes++;
+          recomputeCorrectCount();
+          renderTyped();
+          updateStats();
+        }
+        return;
+      }
+
+      // Ignore non-typeable keys
+      if (!isTypeableKey(e)) return;
+
+      e.preventDefault();
+
+      let char = e.key;
+      totalKeystrokes++;
+
+      // If curse is pending, repeat this key 3–7 times
+      let repeatTimes = 1;
+      if (cursePending) {
+        repeatTimes = Math.floor(Math.random() * 5) + 3; // 3..7
+        cursePending = false;
+      }
+
+      for (let r = 0; r < repeatTimes; r++) {
+        typedChars.push(char);
+      }
+
+      // Determine if the FIRST inserted char was correct at its position.
+      // (You can make it harsher by checking all repeats, but this keeps it playable.)
+      const idx = typedChars.length - repeatTimes;
+      const expected = targetText[idx];
+
+      if (char !== expected) {
+        mistakes++;
+        cursePending = true; // next key gets repeated
+      }
+
+      recomputeCorrectCount();
+      renderTyped();
+      updateStats();
+
+      // End condition: reached target length
+      if (typedChars.length >= targetText.length) {
+        stopTimer();
+        // Optional: lock input when done
+        // typingArea.blur();
+      }
+    });
+
+    restartBtn.addEventListener("click", restart);
+
+    // Click to focus
+    typingArea.addEventListener("click", () => typingArea.focus());
+
+    // Start
+    restart();
+  </script>
+</body>
+</html>
