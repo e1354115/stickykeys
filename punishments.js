@@ -1,6 +1,3 @@
-// punishments.js
-// All annoying features and visual effects
-
 window.Punishments = (function () {
   
   function addHoneyDrip() {
@@ -58,20 +55,17 @@ window.Punishments = (function () {
     }, 4000);
   }
 
-  // GLUE LEVEL - Aggressive word scrambling
   function jumbleLastFewWords(typedChars, chunkSize = 60) {
     const typedStr = typedChars.join("");
     const words = typedStr.trim().split(/\s+/);
     
     if (words.length <= 3) return typedChars;
 
-    // Scramble MANY words - 6-10 words or all available
     const wordsToScramble = Math.min(words.length, Math.floor(Math.random() * 5) + 6);
     const startIdx = Math.max(0, words.length - wordsToScramble);
     const wordsToKeep = words.slice(0, startIdx);
     const wordsToMix = words.slice(startIdx);
 
-    // Fisher-Yates shuffle - do it TWICE for maximum chaos
     for (let shuffle = 0; shuffle < 2; shuffle++) {
       for (let i = wordsToMix.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -83,24 +77,20 @@ window.Punishments = (function () {
     return newStr.split("");
   }
 
-  // GUM LEVEL - Scrambles fewer words (1-2) with letters mixed
   function stretchAndJumbleWord(typedChars) {
     const typedStr = typedChars.join("");
     const words = typedStr.trim().split(/\s+/);
     
     if (words.length < 2) return typedChars;
     
-    // Scramble only 1-2 words (much less severe)
-    const numWordsToScramble = Math.min(words.length, Math.floor(Math.random() * 2) + 1);
+=    const numWordsToScramble = Math.min(words.length, Math.floor(Math.random() * 2) + 1);
     const startIdx = Math.max(0, words.length - numWordsToScramble);
     const wordsToKeep = words.slice(0, startIdx);
     const wordsToScramble = words.slice(startIdx);
     
-    // Scramble letters within words only (no word order shuffling)
     const scrambledWords = wordsToScramble.map(word => {
-      if (word.length <= 3) return word; // Don't scramble short words
+      if (word.length <= 3) return word; 
       
-      // Scramble letters in the word
       const letters = word.split('');
       for (let i = letters.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));

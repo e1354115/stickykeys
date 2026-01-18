@@ -1,6 +1,3 @@
-// app.js
-
-// ---------- ELEMENTS ----------
 const elTarget = document.getElementById("target");
 const elTyped = document.getElementById("typed");
 const elTime = document.getElementById("time");
@@ -27,12 +24,10 @@ const globalDryingBar = document.getElementById("globalDryingBar");
 const globalDryingText = document.getElementById("globalDryingText");
 const globalDryingFill = document.getElementById("globalDryingFill");
 
-// Video elements
 const bgVideoHoney = document.getElementById("bgVideoHoney");
 const bgVideoGum = document.getElementById("bgVideoGum");
 const bgVideoGlue = document.getElementById("bgVideoGlue");
 
-// ---------- MODAL SYSTEM ----------
 let modalTimeout = null;
 let isModalWaitingForUser = false;
 
@@ -44,7 +39,6 @@ function showModal(icon, message, requireUserAction = true) {
   modalOverlay.classList.add("show");
   isModalWaitingForUser = requireUserAction;
   
-  // Don't auto-close if user action is required
   if (!requireUserAction) {
     if (modalTimeout) clearTimeout(modalTimeout);
     modalTimeout = setTimeout(() => {
@@ -60,7 +54,6 @@ function hideModal() {
     clearTimeout(modalTimeout);
     modalTimeout = null;
   }
-  // Refocus typing area after modal closes
   setTimeout(() => {
     typingArea.focus();
   }, 100);
@@ -80,7 +73,6 @@ modalBtn.addEventListener("click", (e) => {
   hideModal();
 });
 
-// Allow Enter key to close modal
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && modalOverlay.classList.contains("show") && isModalWaitingForUser) {
     e.preventDefault();
@@ -97,7 +89,6 @@ modalOverlay.addEventListener("click", (e) => {
 
 window.showModal = showModal;
 
-// ---------- STATE ----------
 let level = 1;
 let levelConfig = window.LEVELS[level];
 let targetText = "";
@@ -120,9 +111,8 @@ let honeyDripTimerId = null;
 let globalDryingProgress = 0;
 let globalDryingTimerId = null;
 let levelCompleted = false;
-let isGloballyDrying = false; // NEW: Track if glue is drying at level completion
+let isGloballyDrying = false; 
 
-// ---------- HELPERS ----------
 function pickText() {
   return levelConfig.generator();
 }
@@ -133,21 +123,18 @@ function startTimerIfNeeded() {
   timerId = setInterval(updateStats, 100);
   window.AudioManager.play(level);
   
-  // LEVEL 1: Honey drips only
   if (level === 1 && levelConfig.features.drippingHoney) {
     honeyDripTimerId = setInterval(() => {
       window.Punishments.addHoneyDrip();
     }, 1500);
   }
   
-  // LEVEL 2: Bubble generation
   if (level === 2 && levelConfig.features.bubbles) {
     bubbleTimerId = setInterval(() => {
       window.Punishments.addBubble();
     }, 800);
   }
   
-  // LEVEL 3: Glue flow generation and key disable
   if (level === 3) {
     if (levelConfig.features.glueFlows) {
       glueTimerId = setInterval(() => {
@@ -237,7 +224,6 @@ function renderTyped() {
     const expected = targetText[i] ?? "";
     const cls = (ch === expected) ? "char-good" : "char-bad";
     
-    // LEVEL 2: Apply stretching effect to last few characters
     const isStretching = level === 2 && stretchingChar && i >= typedChars.length - 5;
     
     if (isStretching) {
@@ -247,7 +233,6 @@ function renderTyped() {
     }
   }
   
-  // Add cursor based on level
   if (level === 1) {
     out.push('<span class="cursor cursor-honey"></span>');
   } else if (level === 2) {
@@ -264,9 +249,8 @@ function checkLevelCompletion() {
     levelCompleted = true;
     stopTimer();
     
-    // LEVEL 3: Show drying bar and BLOCK TYPING
     if (level === 3 && levelConfig.features.dryingBar) {
-      isGloballyDrying = true; // Block all typing during drying
+      isGloballyDrying = true; 
       globalDryingBar.style.display = 'block';
       globalDryingProgress = 0;
       globalDryingFill.style.width = '0%';
@@ -318,7 +302,7 @@ function showCompletionModal() {
     
     const restartCurrentBtn = document.createElement('button');
     restartCurrentBtn.className = 'modal-btn';
-    restartCurrentBtn.textContent = '🔄 Retry This Level';
+    restartCurrentBtn.textContent = 'Retry This Level';
     restartCurrentBtn.style.background = '#FF6F00';
     restartCurrentBtn.addEventListener('click', () => {
       hideModal();
@@ -361,7 +345,6 @@ function updateBackground() {
   const body = document.body;
   body.className = '';
   
-  // Deactivate all videos
   bgVideoHoney.classList.remove('active');
   bgVideoGum.classList.remove('active');
   bgVideoGlue.classList.remove('active');
@@ -441,12 +424,10 @@ function restart() {
   }, 100);
 }
 
-// ---------- KEY HANDLER ----------
 typingArea.addEventListener("keydown", (e) => {
-  // BLOCK if level completed OR globally drying
   if (levelCompleted || isGloballyDrying) return;
   
-  // Don't allow typing if modal is open and waiting for user
+
   if (isModalWaitingForUser) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -464,11 +445,9 @@ typingArea.addEventListener("keydown", (e) => {
     startTimerIfNeeded();
   }
 
-  // LEVEL 3: Handle spacebar for key disable
   if (level === 3 && levelConfig.features.keyDisable && disabledKey && e.key === ' ') {
     e.preventDefault();
     
-    // Block spacebar if already drying
     if (isDrying) return;
     
     spacebarPresses++;
@@ -500,15 +479,12 @@ typingArea.addEventListener("keydown", (e) => {
     return;
   }
   
-  // LEVEL 3: Block disabled key OR if drying
   if (level === 3 && disabledKey) {
-    // Block all typing (except spacebar) if key is drying
     if (isDrying && e.key !== ' ') {
       e.preventDefault();
       return;
     }
     
-    // Block the specific disabled key
     if (e.key.toLowerCase() === disabledKey.toLowerCase()) {
       e.preventDefault();
       showModal('🚫', `Key "${disabledKey}" is stuck in glue!\nPress SPACEBAR ${10 - spacebarPresses} more times!`, true);
@@ -548,7 +524,6 @@ function processKeyPress(char) {
     correctCount++;
   }
 
-  // LEVEL 1: Repeated letters mechanic ONLY
   if (level === 1 && levelConfig.features.repeatedLetters) {
     const repeatChance = 0.18; // 18% chance
     if (Math.random() < repeatChance) {
@@ -565,11 +540,9 @@ function processKeyPress(char) {
     }
   }
 
-  // LEVEL 2: Stretching AND word jumbling - BOTH can happen
   if (level === 2) {
     typedChars.push(char);
     
-    // Stretching effect
     if (levelConfig.features.stretchEffect && Math.random() < 0.20) {
       stretchingChar = char;
       setTimeout(() => {
@@ -579,7 +552,6 @@ function processKeyPress(char) {
       showModal('🫧', 'Gum stretched your letters!', true);
     }
     
-    // Word scrambling - happens rarely (very low frequency)
     if (levelConfig.features.wordJumble && Math.random() < 0.015 && typedChars.length > 30) {
       typedChars = window.Punishments.stretchAndJumbleWord(typedChars);
       showModal('🫧', 'Gum scrambled your words!', true);
@@ -594,8 +566,7 @@ function processKeyPress(char) {
 
   typedChars.push(char);
   
-  // LEVEL 3: Word jumble happens EVERY 5 mistakes
-  if (level === 3 && levelConfig.features.wordJumble && mistakes > 0 && mistakes % 5 === 0 && typedChars.length > 20) {
+  if (level === 3 && levelConfig.features.wordJumble && Math.random() < 0.1 && typedChars.length > 20) {
     typedChars = window.Punishments.jumbleLastFewWords(typedChars, 60);
     showModal('🌀', 'Glue scrambled many words!', true);
   }
@@ -607,7 +578,6 @@ function processKeyPress(char) {
   checkLevelCompletion();
 }
 
-// ---------- EVENTS ----------
 restartBtn.addEventListener("click", (e) => {
   e.preventDefault();
   restart();
@@ -631,7 +601,6 @@ levelBtns.forEach(btn => {
   });
 });
 
-// ---------- INITIALIZE ON LOAD ----------
 document.addEventListener('DOMContentLoaded', () => {
   window.AudioManager.init();
   updateBackground();

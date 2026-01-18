@@ -1,7 +1,3 @@
-// levels.js
-// Level configurations and sentence generators
-
-// ---------- AUDIO MANAGER ----------
 window.AudioManager = {
   sounds: {
     honey: null,
