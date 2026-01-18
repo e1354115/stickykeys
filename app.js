@@ -525,13 +525,13 @@ function processKeyPress(char) {
   }
 
   if (level === 1 && levelConfig.features.repeatedLetters) {
-    const repeatChance = 0.18; // 18% chance
+    const repeatChance = 0.18; 
     if (Math.random() < repeatChance) {
-      const repeatCount = Math.floor(Math.random() * 2) + 2; // 2-3 repeats
+      const repeatCount = Math.floor(Math.random() * 2) + 2; 
       for (let i = 0; i < repeatCount; i++) {
         typedChars.push(char);
       }
-      showModal('🍯', 'Honey made the letter repeat!', true);
+      showModal('🍯', 'Honey made your keys stick together!', true);
       
       recomputeCorrectCount();
       renderTyped();
@@ -568,7 +568,7 @@ function processKeyPress(char) {
   
   if (level === 3 && levelConfig.features.wordJumble && Math.random() < 0.1 && typedChars.length > 20) {
     typedChars = window.Punishments.jumbleLastFewWords(typedChars, 60);
-    showModal('🌀', 'Glue scrambled many words!', true);
+    showModal('🌀', 'Words got tangled in glue!', true);
   }
 
   recomputeCorrectCount();
