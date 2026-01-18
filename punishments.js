@@ -83,7 +83,7 @@ window.Punishments = (function () {
     
     if (words.length < 2) return typedChars;
     
-=    const numWordsToScramble = Math.min(words.length, Math.floor(Math.random() * 2) + 1);
+    const numWordsToScramble = Math.min(words.length, Math.floor(Math.random() * 2) + 1);
     const startIdx = Math.max(0, words.length - numWordsToScramble);
     const wordsToKeep = words.slice(0, startIdx);
     const wordsToScramble = words.slice(startIdx);
